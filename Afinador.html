@@ -13,21 +13,21 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Afinador y detector de nota</title>
 <style>
-:root{--bg:#EDF0F3;--panel:#fff;--fg:#14202B;--muted:#5B6874;--line:#C4CCD5;--ctl:#E3E8EE;--acc:#2573CF;--good:#15803D;--warn:#B7791F;--bad:#C0392B}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1419;--panel:#171D24;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--ctl:#212A34;--acc:#4A94EA;--good:#4ADE80;--warn:#F2B84B;--bad:#F08A7E;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0F1419;--panel:#171D24;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--ctl:#212A34;--acc:#4A94EA;--good:#4ADE80;--warn:#F2B84B;--bad:#F08A7E;color-scheme:dark}
-:root[data-theme="light"]{--bg:#EDF0F3;--panel:#fff;--fg:#14202B;--muted:#5B6874;--line:#C4CCD5;--ctl:#E3E8EE;--acc:#2573CF;--good:#15803D;--warn:#B7791F;--bad:#C0392B;color-scheme:light}
+:root{--hd:var(--fg);--cb:transparent;--sel:var(--fg);--sel-fg:var(--bg);--main:var(--acc);--main-fg:#fff;--bg:#EDF0F3;--panel:#fff;--fg:#14202B;--muted:#5B6874;--line:#C4CCD5;--ctl:#E3E8EE;--acc:#2573CF;--good:#15803D;--warn:#B7791F;--bad:#C0392B}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hd:#F5C400;--cb:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--main:#F5C400;--main-fg:#2B2000;--bg:#0F1419;--panel:#171D24;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--ctl:#212A34;--acc:#4A94EA;--good:#4ADE80;--warn:#F2B84B;--bad:#F08A7E;color-scheme:dark}}
+:root[data-theme="dark"]{--hd:#F5C400;--cb:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--main:#F5C400;--main-fg:#2B2000;--bg:#0F1419;--panel:#171D24;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--ctl:#212A34;--acc:#4A94EA;--good:#4ADE80;--warn:#F2B84B;--bad:#F08A7E;color-scheme:dark}
+:root[data-theme="light"]{--hd:var(--fg);--cb:transparent;--sel:var(--fg);--sel-fg:var(--bg);--main:var(--acc);--main-fg:#fff;--bg:#EDF0F3;--panel:#fff;--fg:#14202B;--muted:#5B6874;--line:#C4CCD5;--ctl:#E3E8EE;--acc:#2573CF;--good:#15803D;--warn:#B7791F;--bad:#C0392B;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px max(16px,env(safe-area-inset-right)) 28px max(16px,env(safe-area-inset-left))}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-h1{font-size:22px;margin:0}
+h1{font-size:22px;margin:0;color:var(--hd)}h2,h3{color:var(--hd)}
 .muted{color:var(--muted);font-size:13px}
 .card{background:var(--panel);border-radius:14px;padding:14px 16px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button,select{font:500 15px system-ui,sans-serif;color:var(--fg);background:var(--ctl);border:1.5px solid transparent;border-radius:10px;min-height:44px;padding:0 14px;cursor:pointer}
+button,select{font:500 15px system-ui,sans-serif;color:var(--fg);background:var(--ctl);border:1.5px solid var(--cb);border-radius:10px;min-height:44px;padding:0 14px;cursor:pointer}
 select{flex:1;min-width:0}
-button.main{background:var(--acc);color:#fff;flex:1}
-button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+button.main{background:var(--main);color:var(--main-fg);flex:1}
+button[aria-pressed="true"]{background:var(--sel);color:var(--sel-fg)}
 button:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .note{font:700 88px/1 system-ui,sans-serif;text-align:center;min-height:92px}
 .note small{font-size:34px;font-weight:500;color:var(--muted)}
