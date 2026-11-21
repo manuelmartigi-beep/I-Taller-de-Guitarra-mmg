@@ -694,13 +694,17 @@ async function importFile(f){
  impErr('');
  try{
   const name=f.name.replace(/\.[^.]+$/,''),ext=(f.name.split('.').pop()||'').toLowerCase(),buf=new Uint8Array(await f.arrayBuffer());
+  const tip=t=>Object.assign(new Error(t),{tip:true});
+  if(ext==='pdf'||(buf[0]===0x25&&buf[1]===0x50&&buf[2]===0x44&&buf[3]===0x46))throw tip('Este archivo es un PDF. Aquí solo se pueden subir MusicXML o MIDI. Si lo bajaste de musescore.com, vuelve a descargarlo eligiendo «MusicXML» (o «MIDI»). Si solo tienes el PDF, usa la pestaña «Foto o PDF».');
+  if(ext==='mscz'||ext==='mscx')throw tip('Este archivo es de MuseScore. Ábrelo en MuseScore y usa Archivo → Exportar → MusicXML, o en musescore.com descárgalo como «MusicXML». Después súbelo aquí.');
+  if(/^(png|jpe?g|webp|heic|gif)$/.test(ext))throw tip('Este archivo es una imagen. Para fotos de partituras usa la pestaña «Foto o PDF».');
   let p;
   if(ext==='mid'||ext==='midi'||(buf[0]===0x4d&&buf[1]===0x54&&buf[2]===0x68&&buf[3]===0x64))p=parseMidi(buf,name);
   else if(ext==='mxl'||(buf[0]===0x50&&buf[1]===0x4b))p=parseMusicXML(await unzipMxl(buf),name);
   else p=parseMusicXML(new TextDecoder().decode(buf),name);
   p.src='Importada de '+f.name+'.';
   addPiece(p);
- }catch(e){console.error(e);impErr('No he podido leer el archivo: '+(e.message||e));}
+ }catch(e){console.error(e);impErr(e.tip?e.message:'No he podido leer el archivo: '+(e.message||e));}
 }
 
 // ---------- .mxl (zip) ----------
