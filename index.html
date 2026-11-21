@@ -1188,6 +1188,10 @@ function afCard(){
  h+='<a id="afGo" '+(hr?'href="'+hr+'"'+(pwa?'':' target="_blank" rel="noopener"'):'aria-disabled="true"')+' style="'+AF_BTN+(hr?'':';opacity:.45;pointer-events:none')+'">Abrir el afinador</a>';
  return h+'</div>';
 }
+function partCard(){
+ var pwa=afPwa(),hr=afHref().replace(/Afinador\.html$/,'Partituras.html');
+ return '<div class="card"><h2>Partituras: toca encima</h2><p class="muted">Abre una pieza o sube tu partitura (MusicXML, MIDI, tablatura de texto o foto), escúchala, practícala nota a nota con el micrófono y haz el examen para sacar tu puntuación.</p><a id="ptGo" '+(hr?'href="'+hr+'"'+(pwa?'':' target="_blank" rel="noopener"'):'aria-disabled="true"')+' style="'+AF_BTN+(hr?'':';opacity:.45;pointer-events:none')+'">Abrir partituras</a></div>';
+}
 function afUpd(){var a=$('afGo');if(!a)return;var hr=afHref();if(hr){a.setAttribute('href',hr);a.setAttribute('target','_blank');a.setAttribute('rel','noopener');a.removeAttribute('aria-disabled');a.style.opacity='';a.style.pointerEvents='';}else{a.removeAttribute('href');a.setAttribute('aria-disabled','true');a.style.opacity='.45';a.style.pointerEvents='none';}}
 function rTune(){
  var t=TUN[st.tun],h='<div class="card"><h2>Afinación</h2><div class="row"><select id="selTun2" aria-label="Afinación">'+TUNL.map(function(x){return'<option value="'+x.id+'"'+(x.id===st.tun?' selected':'')+'>'+x.name+'</option>';}).join('')+'</select></div></div>';
@@ -5121,7 +5125,7 @@ function feHtml(){
 function rStudy(){
  var seg='<div class="row">'+segB('sub','les','Lecciones',st.sub!=='ex')+segB('sub','ex','Ejercicios',st.sub==='ex')+'</div>';
  if(st.sub==='ex'){rExercises(seg);return;}
- var h=seg+hoyHtml()+tourCard()+rtHtml()+weekHtml()+'<div class="card"><h2>Tu progreso</h2><div class="prog"><i id="progbar" style="width:0%"></i></div><p class="muted" id="progtxt" style="margin-top:6px"></p><p class="muted" style="margin-top:4px">Abre una lección, léela, prueba los botones de sonido y márcala como hecha.</p></div>';
+ var h=seg+hoyHtml()+tourCard()+rtHtml()+partCard()+weekHtml()+'<div class="card"><h2>Tu progreso</h2><div class="prog"><i id="progbar" style="width:0%"></i></div><p class="muted" id="progtxt" style="margin-top:6px"></p><p class="muted" style="margin-top:4px">Abre una lección, léela, prueba los botones de sonido y márcala como hecha.</p></div>';
  var tcards='<details class="card lesson"><summary><span class="n">♯</span><span class="tt">Tabla de notas: sostenidos y bemoles</span></summary><div class="body" id="ntab">'+ntabHtml()+'</div></details>';
  tcards+='<details class="card lesson"><summary><span class="n">♮</span><span class="tt">Notas de cada cuerda</span></summary><div class="body">'+strTblHtml()+'</div></details>';
  var lg=-1;LES.forEach(function(l,i){
