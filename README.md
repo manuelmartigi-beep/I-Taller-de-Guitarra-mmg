@@ -6,6 +6,7 @@ App web para aprender guitarra: escalas, acordes, lectura de partitura y tablatu
 
 - `index.html`: la app.
 - `Afinador.html`: afinador, lectura con micrófono y grabadora (necesita HTTPS para usar el micrófono).
+- `Partituras.html`: partituras para tocar encima. Biblioteca de piezas, importación de MusicXML (.musicxml, .xml, .mxl), MIDI, tablatura de texto y foto o PDF (con IA y tu clave de Anthropic). Modos: escuchar, practicar nota a nota con el micrófono y examen con puntuación. Bucle de compases, tempo, metrónomo y exportación a MusicXML y MIDI.
 - `manifest.webmanifest`, `sw.js`: lo que permite instalarla y usarla sin conexión.
 - `icon-*.png`, `apple-touch-icon.png`, `favicon.svg`, `icon.svg`: iconos de guitarra.
 
