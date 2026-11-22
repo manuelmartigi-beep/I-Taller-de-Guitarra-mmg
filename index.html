@@ -1226,19 +1226,20 @@ var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10
 (function(){try{var s=document.createElement('style');s.textContent='.stf{display:block;margin:0 auto}.stf .ev{color:var(--fg)}.stf .ev.on{color:var(--acc)}.stf .ev.ok{color:var(--good)}.stf .ev.no{color:var(--bad)}.stf .ev.dim{color:var(--muted)}.stf .ev *{transition:none}.stf .cn{fill:var(--muted)}.stf .cn.on{fill:var(--acc);font-size:17px}.stf .lyr{fill:var(--fg)}.stf .lyr.on{fill:var(--acc)}';document.head.appendChild(s);}catch(e){}})();
 function stfHi(root,i,cls){var els=root.querySelectorAll('.ev');for(var k=0;k<els.length;k++){var el=els[k];el.setAttribute('class','ev'+(String(k)===String(i)&&cls?' '+cls:''));}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
-function stfNB(){return'<button class="seg opt" data-a="stfnames" aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
+function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
 function stfFlagSvg(sx,y2,up,n){var s='',k,o;for(k=0;k<n;k++){o=k*7*(up?1:-1);s+=up?'<path d="M '+sx+' '+(y2+o)+' C '+(sx+1)+' '+(y2+o+8)+' '+(sx+11)+' '+(y2+o+10)+' '+(sx+8)+' '+(y2+o+21)+'" fill="none" stroke="currentColor" stroke-width="2"/>':'<path d="M '+sx+' '+(y2+o)+' C '+(sx+1)+' '+(y2+o-8)+' '+(sx+11)+' '+(y2+o-10)+' '+(sx+8)+' '+(y2+o-21)+'" fill="none" stroke="currentColor" stroke-width="2"/>';}return s;}
 function stfDotsSvg(x,cx,ys){var s='',n=x.dot||0,k;if(!n)return s;var dx=cx+(x.d==='w'?13:11);ys.forEach(function(y){var yy=(Math.abs(y)%10===0)?y-5:y;for(k=0;k<n;k++)s+='<circle cx="'+(dx+k*5)+'" cy="'+yy+'" r="1.9" fill="currentColor"/>';});return s;}
-function stfHeadN(x,cx,y){
- var g='',k,l=((x.n%7)+7)%7,t=st.latin?LAT[l]:LET[l],w=x.d==='w',h=x.d==='h',bg='var(--panel,var(--bg))';
- if(y<0)for(k=-10;k>=y-0.1;k-=10)g+='<line x1="'+(cx-14)+'" x2="'+(cx+14)+'" y1="'+k+'" y2="'+k+'" stroke="var(--fg)" stroke-width="1.4"/>';
- if(y>40)for(k=50;k<=y+0.1;k+=10)g+='<line x1="'+(cx-14)+'" x2="'+(cx+14)+'" y1="'+k+'" y2="'+k+'" stroke="var(--fg)" stroke-width="1.4"/>';
- if(w||h)g+='<ellipse class="nh" cx="'+cx+'" cy="'+y+'" rx="'+(w?9.2:8.8)+'" ry="5.5" fill="'+bg+'" stroke="currentColor" stroke-width="'+(w?2.4:1.8)+'"/>';
- else g+='<ellipse class="nh" cx="'+cx+'" cy="'+y+'" rx="8.8" ry="5.5" fill="currentColor"/>';
- return g+'<text class="nn" x="'+cx+'" y="'+(y+2.8)+'" font-size="8" font-weight="700" text-anchor="middle" fill="'+(w||h?'currentColor':bg)+'" style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:-.2px">'+t+'</text>';
+function stfHeadN(x,cx,y,hx,n,ry){
+ hx=hx==null?cx:hx;n=n==null?x.n:n;ry=ry||5.5;
+ var g='',k,l=((n%7)+7)%7,t=st.latin?LAT[l]:LET[l],w=x.d==='w',h=x.d==='h',bg='var(--panel,var(--bg))',la=Math.min(cx,hx)-14,lb=Math.max(cx,hx)+14;
+ if(y<0)for(k=-10;k>=y-0.1;k-=10)g+='<line x1="'+la+'" x2="'+lb+'" y1="'+k+'" y2="'+k+'" stroke="var(--fg)" stroke-width="1.4"/>';
+ if(y>40)for(k=50;k<=y+0.1;k+=10)g+='<line x1="'+la+'" x2="'+lb+'" y1="'+k+'" y2="'+k+'" stroke="var(--fg)" stroke-width="1.4"/>';
+ if(w||h)g+='<ellipse class="nh" cx="'+hx+'" cy="'+y+'" rx="'+(w?9.2:8.8)+'" ry="'+ry+'" fill="'+bg+'" stroke="currentColor" stroke-width="'+(w?2.4:1.8)+'"/>';
+ else g+='<ellipse class="nh" cx="'+hx+'" cy="'+y+'" rx="8.8" ry="'+ry+'" fill="currentColor"/>';
+ return g+'<text class="nn" x="'+hx+'" y="'+(y+2.8)+'" font-size="8" font-weight="700" text-anchor="middle" fill="'+(w||h?'currentColor':bg)+'" style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:-.2px">'+t+'</text>';
 }
 function stfHead(x,cx,y,hx,ledgers){
  var g='',k;
@@ -1254,15 +1255,15 @@ function stfChord(x,cx,tab,ty,cls){
  var g=stfG(x,cls,cx),hs=x.ch.slice().sort(function(a,b){return b.y-a.y;}),up=x.up,mn=99,mx=-99,ai=0,po=0,prev=null,ys=[];
  hs.forEach(function(c){
   mn=Math.min(mn,c.y);mx=Math.max(mx,c.y);var off=0;
-  if(prev&&Math.abs(c.y-prev.y)<=5&&po===0)off=up?11:-11;po=off;prev=c;var hx=cx+off,y=c.y;ys.push(y);
-  g+=stfHead(x,cx,y,hx,true);
-  var ag=c.accd!==undefined?c.accd:(c.a?accStr(c.a):'');if(ag){g+=stfAccSvg(ag,cx,y,ai);ai++;}
+  if(prev&&Math.abs(c.y-prev.y)<=5&&po===0)off=up?(STF_NM?17.6:11):(STF_NM?-17.6:-11);po=off;prev=c;var hx=cx+off,y=c.y;ys.push(y);
+  g+=STF_NM?stfHeadN(x,cx,y,hx,c.n,5):stfHead(x,cx,y,hx,true);
+  var ag=c.accd!==undefined?c.accd:(c.a?accStr(c.a):'');if(ag){g+=stfAccSvg(ag,STF_NM?cx-3:cx,y,ai);ai++;}
  });
  var nf=STF_NFL[x.d]||0;
- if(x.d!=='w'){var sx=up?cx+5.3:cx-5.3,y2=x.bm?x.bm.y:(up?mn-32-(nf>1?(nf-1)*7:0):mx+32+(nf>1?(nf-1)*7:0));
+ if(x.d!=='w'){var sx=up?cx+(STF_NM?8.6:5.3):cx-(STF_NM?8.6:5.3),y2=x.bm?x.bm.y:(up?mn-32-(nf>1?(nf-1)*7:0):mx+32+(nf>1?(nf-1)*7:0));
   g+='<line x1="'+sx+'" x2="'+sx+'" y1="'+(up?mx:mn)+'" y2="'+y2+'" stroke="currentColor" stroke-width="1.8"/>';
   if(nf&&!x.bm)g+=stfFlagSvg(sx,y2,up,nf);}
- g+=stfDotsSvg(x,cx,ys);
+ g+=stfDotsSvg(x,STF_NM?cx+3:cx,ys);
  if(x.sym)g+='<text x="'+cx+'" y="'+(x.sy!==undefined?x.sy:-12)+'" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">'+(st.latin?conv(x.sym):x.sym)+'</text>';
  if(tab)x.ch.forEach(function(c){g+='<text x="'+cx+'" y="'+(ty+(5-c.pos.s)*10+4.5)+'" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor" style="paint-order:stroke;stroke:var(--panel,var(--bg));stroke-width:4px">'+c.pos.f+'</text>';});
  return g+'</g>';
@@ -1318,7 +1319,7 @@ function stfRepStart(xs,tab,ty){
  return s;
 }
 function stfBeamSvg(grp,CX){
- var ev=grp.ev,up=grp.up,y=grp.y,s='',L,i,sxf=function(x){var r=(STF_NM&&x.n!=null&&!x.ch)?8.6:5.3;return CX[x.i]+(up?r:-r);};
+ var ev=grp.ev,up=grp.up,y=grp.y,s='',L,i,sxf=function(x){var r=(STF_NM&&(x.n!=null||x.ch))?8.6:5.3;return CX[x.i]+(up?r:-r);};
  for(L=1;L<=3;L++){
   var off=(L-1)*6.5*(up?1:-1),t=up?y+off:y+off-4.5,b=t+4.5;
   var poly=function(x1,x2){var a=Math.min(x1,x2),c=Math.max(x1,x2);return'<path d="M '+a+' '+t+' L '+c+' '+t+' L '+c+' '+b+' L '+a+' '+b+' Z" fill="var(--fg)"/>';};
@@ -1512,7 +1513,7 @@ function rdNew6(){
  while(o.length<3){g=Math.floor(Math.random()*RD_PAT.length);if(o.indexOf(g)<0)o.push(g);}
  o.sort(function(){return Math.random()-0.5;});rd.pat=a;rd.opts=o;rd.pick=-1;
 }
-function rdPatSvg(p,hi,sc){return stfRender([rdPatEv(p)],{ts:'4/4',w:250,sc:sc||1.3,final:true,hi:hi,label:'Ritmo'});}
+function rdPatSvg(p,hi,sc){return stfRender([rdPatEv(p)],{ts:'4/4',w:250,sc:sc||1.3,final:true,hi:hi,names:false,label:'Ritmo'});}
 function rdOpts(){
  var h='';
  rd.opts.forEach(function(pi,i){var bd='var(--line)';if(rd.pick>=0){if(pi===rd.pat)bd='var(--good)';else if(i===rd.pick)bd='var(--bad)';}
@@ -4608,7 +4609,7 @@ function baHtml(){
  h+='</div></div><div class="card"><div style="display:flex;align-items:center;gap:14px"><div style="width:120px;flex:none">'+diagV(fr,STDM)+'</div><div><p class="big" style="margin:0">'+chNameP(c)+'</p><p class="muted" style="margin:0">Forma de '+(sh[0]==='E'?'Mi':'La')+' con cejilla en el traste '+sh[1]+'.</p></div></div>';
  var ev=scChord(c,'w');
  h+='<div style="overflow-x:auto;margin-top:8px">'+stfRender([[ev]],{ts:'4/4',tab:true,w:340,sc:1.3,final:true,label:'Acorde con cejilla'})+'</div>';
- h+='<div class="row" style="margin-top:8px"><button class="opt" data-a="bahear">▶ Escuchar</button><button class="main opt" data-a="baprac">Practicar el cambio con Do</button></div></div>';
+ h+='<div class="row" style="margin-top:8px"><button class="opt" data-a="bahear">▶ Escuchar</button><button class="main opt" data-a="baprac">Practicar el cambio con Do</button>'+stfNB()+'</div></div>';
  h+='<div class="card"><p style="margin:0 0 6px"><b>Cómo colocarlo</b></p><p class="muted" style="margin:0 0 8px">'+(sh[0]==='E'?'Pon el índice plano sobre las 6 cuerdas en el traste '+sh[1]+', un poco girado hacia su borde exterior. Con los otros tres dedos dibuja la forma del Mi '+(/m/.test(c)&&!/m7/.test(c)?'menor':'mayor')+' abierto.':'Pon el índice sobre las cuerdas 5ª a 1ª en el traste '+sh[1]+'. Con los otros dedos dibuja la forma del La '+(/m/.test(c)?'menor':'mayor')+' abierto. La 6ª cuerda no se toca.')+'</p><p style="margin:0 0 6px"><b>Ejercicios de fuerza</b></p><p class="muted" style="margin:0">1. Barra sin más dedos: pulsa las 6 cuerdas y toca una a una; todas deben sonar. 2. Mantén 10 segundos, descansa 10, repite 5 veces. 3. Si una cuerda suena apagada, acerca el índice al traste y mueve el pulgar un poco más abajo en el mástil. 4. Practica poco rato y a menudo: 5 minutos al día valen más que 30 de golpe.</p></div>';
  return h;
 }
@@ -4701,7 +4702,7 @@ function slBuild(){
 function slRange(B){var s=slS(),a=Math.max(1,Math.min(s.from,B.nb)),b=s.to?Math.min(B.nb,Math.max(a,s.to)):B.nb;return[a,b];}
 function slStaff(){var B=sl.B=slBuild(),S=B.S;
  if(!B.nb)return'<p class="muted" style="margin:6px 0">No hay notas todavía. Escribe algo en el Pentagrama libre o genera un ejercicio.</p>';
- return stfRender(B.M,{ts:S.ts,tab:false,w:340,sc:1.5,bars:true,final:true,clef:S.clef,ks:S.mine?feKS():null,names:false,nmIn:slS().mode!=='rhy',lyr:true,label:'Pentagrama de solfeo'});}
+ return stfRender(B.M,{ts:S.ts,tab:false,w:340,sc:1.5,bars:true,final:true,clef:S.clef,ks:S.mine?feKS():null,names:false,nmIn:slS().mode!=='rhy'&&!slS().nmOff,lyr:true,label:'Pentagrama de solfeo'});}
 function slShow(i){sl.play=i;var r=$('slStaff');if(!r)return;
  r.querySelectorAll('.cn.on,.lyr.on').forEach(function(x){x.setAttribute('class',x.getAttribute('class').replace(' on',''));});
  if(i<0){stfHi(r,-1);return;}
@@ -4771,7 +4772,7 @@ function slHtml(){var s=slS(),h=backB(),B=slBuild(),S=B.S,nb=B.nb;
   h+='<p class="muted" style="margin:10px 0 6px">Se usa la partitura que tengas en el Pentagrama libre ('+feS().ev.filter(function(e){return!/r$/.test(e.d);}).length+' notas, compás '+feS().ts+'). Puedes subir un archivo aquí mismo o abrir el Pentagrama libre para escribirla.</p><input type="file" id="slFile" accept=".musicxml,.xml,.mxl,.mid,.midi" aria-label="Subir MusicXML o MIDI"><p id="slImp" class="muted" role="status" style="margin:6px 0 0">'+(fe.imp||'')+'</p><div class="row" style="margin-top:8px"><button class="opt" data-a="exopen" data-v="free">Abrir el Pentagrama libre</button></div>';
  }
  h+='</div>';
- h+='<div class="card"><p style="margin:0 0 6px"><b>Cómo lo cantas</b></p><div class="row" style="flex-wrap:wrap">'+segB('slmode','rhy','Ritmo con palabras',s.mode==='rhy')+segB('slmode','say','Solfeo hablado',s.mode==='say')+segB('slmode','sing','Solfeo entonado',s.mode==='sing')+'</div><p class="muted" style="margin:8px 0 0">'+(s.mode==='rhy'?'Di las palabras (pan, que-so…) al ritmo de las figuras. No hace falta afinar.':s.mode==='say'?'Di el nombre de cada nota (Do, Re, Mi…) al ritmo, sin entonar.':'Canta cada nota con su nombre y afinada. «Escuchar» te da la altura con la guitarra.')+'</p></div>';
+ h+='<div class="card"><p style="margin:0 0 6px"><b>Cómo lo cantas</b></p><div class="row" style="flex-wrap:wrap">'+segB('slmode','rhy','Ritmo con palabras',s.mode==='rhy')+segB('slmode','say','Solfeo hablado',s.mode==='say')+segB('slmode','sing','Solfeo entonado',s.mode==='sing')+'</div><p class="muted" style="margin:8px 0 0">'+(s.mode==='rhy'?'Di las palabras (pan, que-so…) al ritmo de las figuras. No hace falta afinar.':s.mode==='say'?'Di el nombre de cada nota (Do, Re, Mi…) al ritmo, sin entonar.':'Canta cada nota con su nombre y afinada. «Escuchar» te da la altura con la guitarra.')+'</p>'+(s.mode!=='rhy'?'<div class="row" style="margin-top:8px"><button class="seg opt" data-a="slnm" aria-pressed="'+!s.nmOff+'">Nombres de notas '+(s.nmOff?'no':'sí')+'</button></div>':'')+'</div>';
  if(s.src==='mine'&&fe.imp&&sl.scroll){h+='<div class="card" role="status" style="border:2px solid var(--acc)"><b>'+fe.imp+'</b></div>';setTimeout(function(){var e=$('slStaff');if(e){e.scrollIntoView({block:'center',behavior:'smooth'});}sl.scroll=false;},80);}
  h+='<div class="card"><div id="slStaff" style="overflow-x:auto">'+slStaff()+'</div><p class="muted" id="slSt" role="status" style="margin:6px 0 0;min-height:20px">'+sl.msg+'</p>';
  h+='<p class="muted" style="margin:6px 0 0">Los números de debajo son los pulsos. En compases compuestos (6/8, 9/8, 12/8) el pulso es la negra con puntillo.</p></div>';
@@ -4800,6 +4801,7 @@ function slAct(a,v){var s=slS();if(a!=='slplay'&&a!=='slmic'&&a!=='slloop'&&slm.
   case'slplay':if(v==='0'&&s.mic){sqStop();slMicStop();micPre(true,function(ok){if(!ok){sl.msg=micEv.err;slMsg();return;}slRun(false,true);});}else slRun(v==='1');save();return;
   case'slstop':sqStop();slMicStop();sl.msg='';save();slMsg();return;
   case'slwreset':s.w={};break;
+  case'slnm':s.nmOff=!s.nmOff;break;
  }
  if((a==='slsrc'||a==='sllvl'||a==='slclef'||a==='slts'||a==='slbars'||a==='slnew')&&!s.to)s.from=1;
  save();rStudy();}
@@ -5137,7 +5139,7 @@ function rStudy(){
  tcards+='<details class="card lesson"><summary><span class="n">♮</span><span class="tt">Notas de cada cuerda</span></summary><div class="body">'+strTblHtml()+'</div></details>';
  var lg=-1;LES.forEach(function(l,i){
   if(l.g!==lg){lg=l.g;h+='<h2 style="margin:18px 0 6px">'+LES_G[lg][0]+'</h2>';if(lg===0)h+=tcards;}
-  h+='<details class="card lesson" data-id="'+l.id+'"><summary><span class="n">'+(i+1)+'</span><span class="tt">'+l.t+'</span><span class="badge" id="b-'+l.id+'"'+(st.done.indexOf(l.id)>=0?'':' hidden')+'>Hecha</span></summary><div class="body"><p class="hook">'+l.hook+'</p>'+l.body()+'<button data-a="ldone" data-v="'+l.id+'" id="d-'+l.id+'">'+(st.done.indexOf(l.id)>=0?'Quitar marca':'Marcar como hecha')+'</button></div></details>';
+  h+='<details class="card lesson" data-id="'+l.id+'"><summary><span class="n">'+(i+1)+'</span><span class="tt">'+l.t+'</span><span class="badge" id="b-'+l.id+'"'+(st.done.indexOf(l.id)>=0?'':' hidden')+'>Hecha</span></summary><div class="body"><p class="hook">'+l.hook+'</p>'+(function(b){return /class="stf/.test(b)?'<div class="row" style="margin:0 0 8px">'+stfNB(l.id)+'</div>'+b:b;})(l.body())+'<button data-a="ldone" data-v="'+l.id+'" id="d-'+l.id+'">'+(st.done.indexOf(l.id)>=0?'Quitar marca':'Marcar como hecha')+'</button></div></details>';
  });
  h+='<h2 style="margin:18px 0 6px">Temas varios</h2>'+logrosHtml()+ajustesHtml();
  h+='<details class="card lesson"><summary><span class="n">?</span><span class="tt">Glosario</span></summary><div class="body"><input type="search" id="glQ" placeholder="Buscar término…" aria-label="Buscar en el glosario" style="width:100%;margin-bottom:10px"><div class="dl" id="glL">'+GLO.map(function(g){return'<p><b>'+g[0]+'.</b> '+g[1]+'</p>';}).join('')+'</div><p class="muted" id="glN" hidden>Sin resultados.</p></div></details>';
@@ -5198,7 +5200,7 @@ function render(){applyPrefs();
 function act(a,v,el){
  var c;
  switch(a){
-  case'slsrc':case'sllvl':case'slclef':case'slts':case'slbars':case'slnew':case'slmode':case'slloop':case'slfrom':case'slto':case'slplay':case'slstop':case'slwreset':case'slmic':slAct(a,v);break;
+  case'slsrc':case'sllvl':case'slclef':case'slts':case'slbars':case'slnew':case'slmode':case'slloop':case'slfrom':case'slto':case'slplay':case'slstop':case'slwreset':case'slmic':case'slnm':slAct(a,v);break;
   case'tab':if(v!=='chords')cp.dict=null;if(st.tab==='metro'&&v!=='metro'&&false)mStop();toneStop();progStop();st.tab=v;render();break;
   case'pgo':if(pr.running)pStop();else cdRun(pStart);break;
   case'prloop':st.prLoop=!st.prLoop;el.setAttribute('aria-pressed',st.prLoop);save();break;
@@ -5290,7 +5292,7 @@ function act(a,v,el){
   case'chstop':chStop();break;
   case'sclv':scStop();st.scLv=+v;st.scPc=0;save();rStudy();break;
   case'scpc':scStop();st.scPc=+v;save();rStudy();break;
-  case'stfnames':st.stfNames=!st.stfNames;save();rStudy();break;
+  case'stfnames':st.stfNames=!st.stfNames;save();rStudy();if(v){var dl=document.querySelector('details.lesson[data-id="'+v+'"]');if(dl){dl.open=true;var bl=dl.querySelector('[data-a=stfnames]');if(bl)bl.scrollIntoView({block:'center'});}}break;
   case'sctab':st.scTab=!st.scTab;save();rStudy();break;
   case'scloop':st.scLoop=!st.scLoop;save();rStudy();break;
   case'scdone':{var pid=scCur().id,ix=st.scDone.indexOf(pid);if(ix<0){st.scDone.push(pid);rtAuto('read');}else st.scDone.splice(ix,1);save();rStudy();break;}
