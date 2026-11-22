@@ -1227,6 +1227,7 @@ var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10
 function stfHi(root,i,cls){var els=root.querySelectorAll('.ev');for(var k=0;k<els.length;k++){var el=els[k];el.setAttribute('class','ev'+(String(k)===String(i)&&cls?' '+cls:''));}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
+var APP_VER='45'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -5143,6 +5144,7 @@ function rStudy(){
  });
  h+='<h2 style="margin:18px 0 6px">Temas varios</h2>'+logrosHtml()+ajustesHtml();
  h+='<details class="card lesson"><summary><span class="n">?</span><span class="tt">Glosario</span></summary><div class="body"><input type="search" id="glQ" placeholder="Buscar término…" aria-label="Buscar en el glosario" style="width:100%;margin-bottom:10px"><div class="dl" id="glL">'+GLO.map(function(g){return'<p><b>'+g[0]+'.</b> '+g[1]+'</p>';}).join('')+'</div><p class="muted" id="glN" hidden>Sin resultados.</p></div></details>';
+ h+='<details class="card lesson" id="appVer"><summary><span class="n">i</span><span class="tt">Taller de Guitarra mmg: Versión Actual '+APP_VER+'</span></summary><div class="body"><p class="muted" style="margin:0">Si no ves los últimos cambios, cierra la app del todo y vuelve a abrirla.</p></div></details>';
  $('t-study').innerHTML=h;updProg();
 }
 function updProg(){
