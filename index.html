@@ -3724,9 +3724,9 @@ if(st.chMode!=='one'&&st.chMode!=='prog')st.chMode='one';
 if(['w','h','q'].indexOf(st.chRh)<0)st.chRh='w';
 if(!(st.chBpm>=40&&st.chBpm<=140))st.chBpm=60;
 if(typeof st.chTab!=='boolean')st.chTab=true;
-var chg={cur:null,prog:[],shown:false,n:0,playing:false,fix:''};
+var chg={cur:null,prog:[],shown:st.chShow!==false,n:0,playing:false,fix:''};
 function chFr(name){return chFrets(name);}
-function chNew(){if(chg.fix){chg.cur=chg.fix;chg.shown=false;return;}var P=CHL[st.chLv-1][2],c,g=0;do{c=P[Math.floor(Math.random()*P.length)];g++;}while(c===chg.cur&&g<30);chg.cur=c;chg.shown=false;}
+function chNew(){if(chg.fix){chg.cur=chg.fix;chg.shown=st.chShow!==false;return;}var P=CHL[st.chLv-1][2],c,g=0;do{c=P[Math.floor(Math.random()*P.length)];g++;}while(c===chg.cur&&g<30);chg.cur=c;chg.shown=st.chShow!==false;}
 function chProgNew(){
  var P=CHL[st.chLv-1][2],pr=[],g;
  while(pr.length<4){var c=P[Math.floor(Math.random()*P.length)];if(pr.length&&pr[pr.length-1]===c)continue;pr.push(c);}
@@ -5284,7 +5284,7 @@ function act(a,v,el){
   case'chmode':chStop();st.chMode=v;save();rStudy();break;
   case'chtab':st.chTab=!st.chTab;save();rStudy();break;
   case'chhear':chPlayOne();break;
-  case'chreveal':chg.shown=!chg.shown;rStudy();break;
+  case'chreveal':chg.shown=!chg.shown;st.chShow=chg.shown;save();rStudy();break;
   case'chtoc':chg.n++;if(chg.n>=5)rtAuto('read');chNew();rStudy();break;
   case'chnewp':chStop();chProgNew();rStudy();break;
   case'chlisten':chStop();chRun(false);break;
@@ -5505,7 +5505,7 @@ document.addEventListener('change',function(e){
  else if(t.id==='atSc'){st.atSc=t.value;st.atPos=0;atStop();save();rStudy();}
  else if(t.id==='atBpm'){st.atBpm=+t.value;save();}
  else if(t.id==='scK'||t.id==='scS'||t.id==='scR'){scStop();if(t.id==='scK')st.scG.k=+t.value;else if(t.id==='scS')st.scG.s=t.value;else st.scG.r=+t.value;scGen();save();rStudy();}
- else if(t.id==='chSel'){chg.fix=t.value;chg.shown=false;if(chg.fix)chg.cur=chg.fix;else chNew();rStudy();}
+ else if(t.id==='chSel'){chg.fix=t.value;chg.shown=st.chShow!==false;if(chg.fix)chg.cur=chg.fix;else chNew();rStudy();}
  else if(t.id==='chRh'){chStop();st.chRh=t.value;save();rStudy();}
  else if(t.id==='mlKey'){st.mlKey=+t.value;save();rStudy();mlNew();}
  else if({ccS:1,ccD:1,wuV:1,wuF:1,imProg:1,dyP:1}[t.id]){ccStop();wuStop();imStop();var mp={ccS:'ccSec',ccD:'ccDur',wuV:'wuV',wuF:'wuF',imProg:'imProg',dyP:'dyP'}[t.id];st[mp]=(t.id==='dyP')?t.value:+t.value;cc.res='';save();rStudy();}
