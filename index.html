@@ -1375,7 +1375,7 @@ function stfRender(meas,o){
  var vy=0;if(anyVolta){vy=top0-16;top0=vy-6;}
  var txY=0;if(anyTxt){top0-=16;txY=top0+13;}
  var dyY=0;if(anyDyn){dyY=bot0+14;bot0+=18;}
- var names=!!st.stfNames&&o.names!==false;STF_NM=names;
+ var names=o.nmIn===true||(!!st.stfNames&&o.names!==false);STF_NM=names;
  var rhY=0;if(anyRh){rhY=bot0+12;bot0+=22;}
  var anyCn=false,anyLy=false;FL.forEach(function(x){if(x.cnt&&x.cnt.length)anyCn=true;if(x.lyr)anyLy=true;});
  var cnY=0,lyY=0;if(anyCn){cnY=bot0+14;bot0+=20;}if(anyLy){lyY=bot0+14;bot0+=22;}
@@ -4692,7 +4692,7 @@ function slBuild(){
   m.forEach(function(e,k){var du=feDur(e),rest=/r$/.test(e.d),re=slCopy(e),w=rest?null:slWrit(e,S.clef),id=idx++;
    var tied=!rest&&prevTie&&prevW===w&&w!=null;
    re.cnt=[];mt.p.forEach(function(pl,pi){var ps=pi*0+mt.p.slice(0,pi).reduce(function(a,b){return a+b;},0);if(ps>=pos&&ps<pos+du)re.cnt.push([(ps-pos)/24,String(pi+1),1000+mi*mt.n+pi]);});
-   re.lyr=rest?'':tied?'–':mode==='rhy'?words[k]:(w!=null?slName(w,flat):'');
+   re.lyr=rest||mode!=='rhy'?'':tied?'–':words[k];
    if(tied&&mode==='rhy')re.lyr='–';
    var o={i:id,mi:mi,on:pos,du:du,w:w,rest:rest,tied:tied};ev.push(o);
    prevTie=!rest&&!!e.lig;prevW=w;pos+=du;mo.push(re);});
@@ -4701,7 +4701,7 @@ function slBuild(){
 function slRange(B){var s=slS(),a=Math.max(1,Math.min(s.from,B.nb)),b=s.to?Math.min(B.nb,Math.max(a,s.to)):B.nb;return[a,b];}
 function slStaff(){var B=sl.B=slBuild(),S=B.S;
  if(!B.nb)return'<p class="muted" style="margin:6px 0">No hay notas todavía. Escribe algo en el Pentagrama libre o genera un ejercicio.</p>';
- return stfRender(B.M,{ts:S.ts,tab:false,w:340,sc:1.5,bars:true,final:true,clef:S.clef,ks:S.mine?feKS():null,names:false,lyr:true,label:'Pentagrama de solfeo'});}
+ return stfRender(B.M,{ts:S.ts,tab:false,w:340,sc:1.5,bars:true,final:true,clef:S.clef,ks:S.mine?feKS():null,names:false,nmIn:slS().mode!=='rhy',lyr:true,label:'Pentagrama de solfeo'});}
 function slShow(i){sl.play=i;var r=$('slStaff');if(!r)return;
  r.querySelectorAll('.cn.on,.lyr.on').forEach(function(x){x.setAttribute('class',x.getAttribute('class').replace(' on',''));});
  if(i<0){stfHi(r,-1);return;}
