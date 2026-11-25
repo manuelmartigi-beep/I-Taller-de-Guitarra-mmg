@@ -1241,7 +1241,7 @@ var STF_UT=0;try{['touchmove','wheel'].forEach(function(e){window.addEventListen
 function stfFollow(el,force){
  try{
   if(!force&&(Date.now()-STF_UT<3000||STF_AN))return;
-  if(st.mb&&st.mb.view==='neck'&&el.closest&&el.closest('#mbStaff'))return;
+  if(el.closest&&((st.mb&&st.mb.view==='neck'&&el.closest('#mbStaff'))||(st.arp&&st.arp.view==='neck'&&el.closest('#arStaff'))))return;
   var svg=el.ownerSVGElement;if(!svg)return;var g=el;while(g.parentNode&&g.parentNode!==svg)g=g.parentNode;if(g.parentNode!==svg)g=svg;
   var r=g.getBoundingClientRect();if(!r.height)return;var nx=g.nextElementSibling;while(nx&&nx.tagName.toLowerCase()!=='g')nx=nx.nextElementSibling;var rb=nx?nx.getBoundingClientRect().bottom:r.bottom;
   var sc=svg.parentNode;while(sc&&sc.nodeType===1&&sc!==document.body&&sc!==document.documentElement){var cs=getComputedStyle(sc);if(/(auto|scroll)/.test(cs.overflowY)&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentNode;}
@@ -1272,7 +1272,8 @@ var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.targe
  // Cualquier botón «Escuchar»: tras pulsarlo, sube la partitura (o el mástil, o el principio de la pantalla) arriba.
  if(/Escuchar/.test(b.textContent||'')&&!/Parar/.test(b.textContent||'')){var t0=performance.now();setTimeout(function(){if(STF_AN&&STF_AN.t0>=t0)return;STF_BTN=b;stfTop(true);},40);}},true);}catch(e){}
 function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
- if(b&&/^mb(listen|go)$/.test(b.dataset.a||'')&&st.mb.view==='neck'){var mb=$('mbSc'),mbd=mb&&mb.closest('.board');if(mbd){STF_UT=0;stfScroll(null,mbd.getBoundingClientRect().top-10);}return;}
+ var ba=b&&b.dataset.a||'',nk=/^mb(listen|go)$/.test(ba)&&st.mb.view==='neck'?'mbSc':/^ar(listen|go)$/.test(ba)&&st.arp.view==='neck'?'arSc':'';
+ if(nk){var mb=$(nk),mbd=mb&&mb.closest('.board');if(mbd){STF_UT=0;stfScroll(null,mbd.getBoundingClientRect().top-10);}return;}
  document.querySelectorAll('svg.stf').forEach(function(x){if(x.getBoundingClientRect().height&&x.querySelector('.ev'))v.push(x);});
  if(b)for(var i=0;i<v.length;i++)if(b.compareDocumentPosition(v[i])&4){s=v[i];break;}
  if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);return;}
@@ -1285,7 +1286,7 @@ function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='55'; // súbelo junto con VERSION de sw.js
+var APP_VER='56'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -1674,7 +1675,7 @@ var EX_HELP={
  plan:'Sigue un objetivo tras otro. Marca cada uno con el círculo cuando lo hayas hecho; los botones te llevan directo al ejercicio.',
  ivt:'Elige un modo. En «Aprender» pulsa un intervalo y mira cómo se dibuja. En los otros, responde tocando en el mástil o eligiendo el nombre. R es la nota de partida.',
  route:'Toca en el mástil las notas que quieras tocar, en orden, o carga uno de los «Ejercicios para unir patrones»: parejas (subes por un patrón y bajas por el siguiente) y diagonales (cruzas el mástil cambiando de patrón). Con «Zona baja» los ejercicios quedan cerca de la cejuela y sin cuerdas al aire. Después pulsa «Escuchar» o «Tocar tú». Activa «Evaluar con micrófono» si quieres que la app compruebe tus notas. En «Seguir» elige «Solo mástil» (el mástil arriba y la pantalla quieta) o «Mástil y partitura» (la pantalla baja sola para que la partitura se vea siempre).',
- arp:'Elige un ejercicio guiado o configura el tuyo: acorde, patrón, figura y tempo. «Escuchar» lo reproduce; «Tocar tú» solo pone el metrónomo y el cursor te marca la nota. Activa el micrófono si quieres que la app te evalúe. Mientras suena, la pantalla baja sola para que la partitura se vea siempre.',
+ arp:'Elige un ejercicio guiado o configura el tuyo: acorde, patrón, figura y tempo. «Escuchar» lo reproduce; «Tocar tú» solo pone el metrónomo y el cursor te marca la nota. Activa el micrófono si quieres que la app te evalúe. En «Practicar sobre» elige «Mástil» (el mástil arriba y la pantalla quieta) o «Pentagrama» (la pantalla baja sola para que la partitura se vea siempre).',
  cchg:'Toca los acordes que quieras practicar (mínimo 2). Elige cada cuántos segundos cambia, o «Manual» para marcar tú los cambios limpios.',
  warm:'Ejercicios de digitación para calentar las manos. Sigue el patrón con el metrónomo, empezando despacio.',
  impro:'Elige tonalidad y base de acordes. Suena la base y tú improvisas con la escala que se ve en el mástil.',
@@ -4234,7 +4235,7 @@ function arHtml(){
  h+='<p class="muted" style="margin:0">'+(man?'Toca una casilla del mástil para añadir esa nota a tu arpegio. ':'')+'Relleno oscuro: las notas que tocas. Círculo azul: la fundamental. Círculos claros: las demás notas del acorde. El punto de color es el dedo de la mano derecha.'+(a.lab==='fing'?' Dedos izquierdos: 1 índice, 2 corazón, 3 anular, 4 meñique, 0 al aire.':'')+'</p>'+arLegend();
  h+='<div class="card"><div class="row" style="justify-content:space-between"><b id="arCnt">'+(R.err?'0':R.meta.filter(function(m){return!m.rest;}).length)+' notas</b>'+(man?'<button class="seg opt" data-a="ardelm" aria-pressed="'+!!ars.del+'">Pulsar nota = quitar</button>':'')+'</div><div class="row" id="arSeq" style="flex-wrap:wrap;gap:6px;margin-top:8px">'+arSeqHtml(R)+'</div><p class="muted" style="margin:6px 0 0">Pulsa una nota de la lista para cambiar su dedo de la mano derecha (p → i → m → a).</p></div>';
  h+='<div class="card"><div class="row" style="margin-bottom:6px">'+stfNB()+'</div><div id="arStaff">'+arStaffHtml(R)+'</div><p class="muted" style="margin:6px 0 0">Bajo cada nota, en el pentagrama y en la tablatura, está el dedo de la mano derecha.</p></div>';
- h+='<div class="card"><div class="row"><button class="opt" data-a="arlisten">▶ Escuchar</button><button class="main opt" data-a="argo">Tocar tú</button><button class="opt" data-a="arstop">Parar</button></div>';
+ h+='<div class="card"><div class="row" style="margin-bottom:8px"><span class="muted" style="flex:none">Practicar sobre</span><button class="seg" data-a="arview" data-v="neck" aria-pressed="'+(a.view==='neck')+'">Mástil</button><button class="seg" data-a="arview" data-v="staff" aria-pressed="'+(a.view!=='neck')+'">Pentagrama</button></div><div class="row"><button class="opt" data-a="arlisten">▶ Escuchar</button><button class="main opt" data-a="argo">Tocar tú</button><button class="opt" data-a="arstop">Parar</button></div>';
  h+='<div class="row" style="margin-top:8px">'+segB('armic','1','Evaluar con micrófono',a.mic)+segB('arloop','1','Repetir sin parar',a.loop)+'</div>';
  h+='<p class="fb" id="arMsg" style="margin:8px 0 0">'+esc(ars.msg)+'</p><p class="muted" style="margin:6px 0 0">'+(a.mode==='chord'?'Pisa todo el acorde antes de empezar y deja los dedos apoyados: solo se mueve la mano derecha. ':'Empieza siempre en la fundamental y toca las notas en orden. ')+'Verás la cuenta atrás 3-2-1 y sonarán cuatro clics de entrada. Con «Tocar tú» solo suena el metrónomo y un cursor te marca la nota en el mástil y en la partitura.</p></div>';
  h+='<div class="card"><div class="row"><input id="arName" type="text" placeholder="Nombre del arpegio" maxlength="40" value="'+esc(ars.name||'')+'" style="flex:1;min-width:0"><button class="opt" data-a="arsave">Guardar</button><button class="opt" data-a="arprint">🖨 Imprimir</button></div>';
@@ -4315,7 +4316,7 @@ function arAct(a,v,el){
  }
 }
 
-if(!st.arp||typeof st.arp!=='object')st.arp={};
+if(!st.arp||typeof st.arp!=='object')st.arp={};if(st.arp.view!=='neck')st.arp.view='staff';
 arFix();
 var ars={playing:false,msg:'',res:null,ci:0,R:null,sx:0};
 var NFA=15;
@@ -5343,6 +5344,7 @@ function act(a,v,el){
   case'armode':case'arpick':case'arundo':case'arclr':case'arback':case'ardeg':case'argen':case'ardelm':case'arfing':case'arsave':case'arprint':case'arload':case'arrm':arAct(a,v,el);break;
   case'arlab':st.arp.lab=v;save();arFull();break;
   case'arlisten':arGo(false);break;
+  case'arview':st.arp.view=v==='neck'?'neck':'staff';save();document.querySelectorAll('[data-a=arview]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===st.arp.view);});break;
   case'argo':if(ars.playing){arStop();arShow(-1);}else arGo(true);break;
   case'arstop':arStop();arShow(-1);break;
   case'armic':st.arp.mic=!st.arp.mic;el.setAttribute('aria-pressed',st.arp.mic);save();break;
