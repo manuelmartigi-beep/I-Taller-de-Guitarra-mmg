@@ -268,9 +268,18 @@ function applyFingers(pats,sc,tunId){
  pats.forEach(function(p,j){var cnt={};p.notes.forEach(function(x){if(x.k<0)return;x.fi=PMF[j][x.s][x.k];});});
 }
 function sharedRange(pats,j){
- var N=pats.length,q=(j+1)%N,off=j===N-1?12:0,fr=[];
- pats[j].notes.forEach(function(a){if(a.k<0)return;pats[q].notes.forEach(function(b){if(b.k<0)return;if(a.s===b.s&&a.f===b.f+off)fr.push(a.f);});});
+ var N=pats.length,q=(j+1)%N,fr=[];
+ [0,12,-12,24,-24].some(function(off){
+  pats[j].notes.forEach(function(a){if(a.k<0)return;pats[q].notes.forEach(function(b){if(b.k<0)return;if(a.s===b.s&&a.f===b.f+off)fr.push(a.f);});});
+  return fr.length>0;
+ });
  return fr.length?[Math.min.apply(null,fr),Math.max.apply(null,fr)]:null;
+}
+// Zona baja: cada patrón en su posición más cercana a la cejuela, sin cuerdas al aire (traste 1 o más)
+function lowZone(pats){
+ if(!st.lowZ)return pats;
+ pats.forEach(function(p){while(p.min<1){p.notes.forEach(function(n){n.f+=12;});p.min+=12;p.max+=12;}while(p.min-12>=1){p.notes.forEach(function(n){n.f-=12;});p.min-=12;p.max-=12;}});
+ return pats;
 }
 function chordsOf(sp,seven){
  return sp.map(function(r,i){
@@ -415,7 +424,7 @@ function genVoicings(pc,ints,mid){
 var st={tab:'fret',root:13,scale:'pentmin',sel:[0],lab:'notes',latin:true,zoom:true,lefty:false,tun:'gstd',tri7:false,cKey:0,cMode:'M',cAlt:false,refA:440,chord:null,sound:'acoustic',done:[],tnote:0,sub:'les',exv:null,bkKey:13,bkProg:5,bkBpm:90,bkStyle:'strum',bkClick:true,sPat:2,sChord:0,sBpm:70,sClick:true,prEx:'updown',prBpm:80,prNpb:1,prLoop:true,prClick:true,eFlat:false,sgG:'folk',sgId:null,sgPc:0,cmCapo:0,mx:{sw:0,tr:0,trStep:5,trBars:4,trMax:160,gap:0,gapPlay:2,gapMute:1,acc:{}},dPc:0,cmPc:0,cmMode:'M',cm7:false,cmDetail:false,cmSong:{v:[],e:[],p:[]},cmCur:'v',rdLv:1,rdDone:[],rdTab:true,rdMode:'tap',rdBpm:70,rdPiece:0,rt:{d:'',done:[]},days:{},miss:{ft:{},int:{},rd:{}}};
 var $=function(id){return document.getElementById(id);};
 try{var sv=JSON.parse(localStorage.getItem('taller-gtr')||'null');if(sv&&typeof sv==='object'){for(var k0 in sv)if(k0!=='chord'&&k0!=='exv')st[k0]=sv[k0];}}catch(e){}
-if(!SND[st.sound])st.sound='acoustic';st.exv=null;if(!SC[st.scale])st.scale='pentmin';if(!TUN[st.tun])st.tun='gstd';if(!ROOTS[st.root])st.root=13;
+if(!SND[st.sound])st.sound='acoustic';st.exv=null;if(!SC[st.scale])st.scale='pentmin';if(typeof st.lowZ!=='boolean')st.lowZ=false;if(!TUN[st.tun])st.tun='gstd';if(!ROOTS[st.root])st.root=13;
 function save(){try{localStorage.setItem('taller-gtr',JSON.stringify(st));}catch(e){}}
 function conv(s){var i=LET.indexOf(s.charAt(0));return i<0?s:LAT[i]+s.slice(1);}
 function nm(l,a){return(st.latin?LAT[l]:LET[l])+accStr(a);}
@@ -655,13 +664,13 @@ function rCtx(){
 var Y0=26,DY=34,PADL=4;
 function rFret(){
  var c=cur(),mid=c.tun.midi,ns=mid.length,pats=genPatterns(c.sc,c.rootPc,mid);
- applyFingers(pats,c.sc,st.tun);curPats=pats;
+ applyFingers(pats,c.sc,st.tun);lowZone(pats);curPats=pats;
  var N=pats.length;st.sel=st.sel.filter(function(x){return x<N;});
  var spc={};c.sp.forEach(function(x){spc[x.pc]=x;});
  var h='<div class="degs">'+c.sp.map(function(x,i){return'<div class="deg'+(i===0?' r':'')+'"><b>'+nm(x.l,x.a)+'</b><span>'+accStr(x.acc)+x.deg+'</span><span>'+INT[x.semi]+'</span></div>';}).join('')+'</div>';
  h+='<div class="row"><button class="seg" data-a="patall" aria-pressed="'+(st.sel.length===0)+'">Todo</button>';
  for(var j=0;j<N;j++)h+='<button class="pat" style="--c:'+pcolor(j)+'" data-a="pat" data-v="'+j+'" aria-pressed="'+(st.sel.indexOf(j)>=0)+'"><span class="sw"></span>Patrón '+(j+1)+'</button>';
- h+='</div><div class="row">';
+ h+='</div><div class="row"><button class="seg" data-a="lowz" data-v="fret" aria-pressed="'+st.lowZ+'">Zona baja</button><span class="muted" style="font-size:13px;flex:1;min-width:0">'+(st.lowZ?'Cada patrón lo más cerca de la cejuela, sin cuerdas al aire.':'Mástil completo, con cuerdas al aire.')+'</span></div><div class="row">';
  [['notes','Notas'],['deg','Grados'],['int','Intervalos'],['fing','Dedos']].forEach(function(o){h+='<button class="seg" data-a="lab" data-v="'+o[0]+'" aria-pressed="'+(st.lab===o[0])+'">'+o[1]+'</button>';});
  h+='</div>';
  if(st.chord)h+='<div class="card row"><span>Acorde en el mástil: <b>'+esc(st.chord.name)+'</b></span><span class="sp"></span><button data-a="clrchord">Quitar</button></div>';
@@ -680,7 +689,7 @@ function rFret(){
  h+='<div class="card"><h2>Esta escala</h2><p>'+esc(c.sc.desc)+'</p><p class="muted" style="margin-top:6px">Pasos: '+steps.join(' – ')+' (T tono, S semitono)</p></div>';
  h+='<details><summary>Cómo unir los patrones</summary><ul class="links">';
  for(var j2=0;j2<N;j2++){var q2=(j2+1)%N,r2=sharedRange(pats,j2);h+='<li><span class="dot" style="--c:'+pcolor(j2)+'">'+(j2+1)+'</span>→<span class="dot" style="--c:'+pcolor(q2)+'">'+(q2+1)+'</span><span class="muted">'+(r2?'comparten '+(r2[0]===r2[1]?'el traste '+r2[0]:'los trastes '+r2[0]+'–'+r2[1]):'')+'</span></li>';}
- h+='</ul><p class="muted" style="margin-top:8px">Sube por el mástil pasando de un patrón al siguiente por las notas comunes. Tras el último vuelve al primero una octava más arriba.</p></details>';
+ h+='</ul><p class="muted" style="margin-top:8px">'+(st.lowZ?'Con «Zona baja» cada patrón está en su posición más baja, así que en el mástil el orden puede empezar por otro patrón. Pasa de uno al siguiente por las notas comunes.':'Sube por el mástil pasando de un patrón al siguiente por las notas comunes. Tras el último vuelve al primero una octava más arriba.')+'</p></details>';
  h+='<details><summary>Opciones del mástil</summary><div class="row" style="margin-bottom:8px">';
  h+='<button class="seg" data-a="latin" data-v="1" aria-pressed="'+st.latin+'">Do Re Mi</button><button class="seg" data-a="latin" data-v="0" aria-pressed="'+!st.latin+'">C D E</button>';
  h+='<button class="seg" data-a="zoom" data-v="1" aria-pressed="'+st.zoom+'">Ampliar</button><button class="seg" data-a="zoom" data-v="0" aria-pressed="'+!st.zoom+'">Ajustar</button>';
@@ -706,7 +715,7 @@ function drawBoard(c,pats,spc){
  [3,5,7,9,15,17,19,21].forEach(function(f){h+='<circle cx="'+fx(f)+'" cy="'+im+'" r="'+ir+'" fill="var(--line)"/>';});
  h+='<circle cx="'+fx(12)+'" cy="'+(im-DY)+'" r="'+ir+'" fill="var(--line)"/><circle cx="'+fx(12)+'" cy="'+(im+DY)+'" r="'+ir+'" fill="var(--line)"/>';
  var M={};
- pats.forEach(function(p,j){p.notes.forEach(function(n){[-24,-12,0,12,24].forEach(function(o){var f=n.f+o;if(f<0||f>=NF)return;var k=n.s+'_'+f;if(!M[k])M[k]={s:n.s,f:f,p:[],fi:{}};if(M[k].p.indexOf(j)<0){M[k].p.push(j);M[k].fi[j]=n.fi;}});});});
+ pats.forEach(function(p,j){p.notes.forEach(function(n){(st.lowZ?[0]:[-24,-12,0,12,24]).forEach(function(o){var f=n.f+o;if(f<0||f>=NF)return;var k=n.s+'_'+f;if(!M[k])M[k]={s:n.s,f:f,p:[],fi:{}};if(M[k].p.indexOf(j)<0){M[k].p.push(j);M[k].fi[j]=n.fi;}});});});
  for(var s2=0;s2<ns;s2++)for(var f2=0;f2<NF;f2++){var pc=(mid[s2]+f2)%12;if(spc[pc]&&!M[s2+'_'+f2])M[s2+'_'+f2]={s:s2,f:f2,p:[],fi:{}};}
  var off='',on='',cp=st.chord?st.chord.pcs:null;
  for(var key in M){
@@ -1227,7 +1236,7 @@ var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10
 function stfHi(root,i,cls){var els=root.querySelectorAll('.ev');for(var k=0;k<els.length;k++){var el=els[k];el.setAttribute('class','ev'+(String(k)===String(i)&&cls?' '+cls:''));}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='45'; // súbelo junto con VERSION de sw.js
+var APP_VER='46'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -3879,9 +3888,68 @@ function mbRedraw(){
  if($('mbCnt'))$('mbCnt').textContent=st.mb.seq.length+' notas';
 }
 function mbFull(){var sc=$('mbSc');mbs.sx=sc?sc.scrollLeft:0;rStudy();}
+// ----- ejercicios para unir patrones (en la ruta) -----
+function upPats(){var c=cur(),pats=genPatterns(c.sc,c.rootPc,c.tun.midi);applyFingers(pats,c.sc,st.tun);lowZone(pats);return{c:c,pats:pats,mid:c.tun.midi};}
+function upPlace(p,center){
+ var lo=st.lowZ?1:0,best=null,bd=1e9;
+ [-24,-12,0,12,24].forEach(function(o){var mn=p.min+o,mx=p.max+o;if(mn<lo||mn>NF-1)return;var d=Math.abs((mn+mx)/2-center)+(mx>NF-1?50:0);if(d<bd){bd=d;best=o;}});
+ if(best===null)best=0;
+ return p.notes.map(function(n){return{s:n.s,f:n.f+best};}).filter(function(n){return n.f>=lo&&n.f<NF;});
+}
+function upStr(ns,s,mid){var seen={};return ns.filter(function(n){return n.s===s;}).sort(function(a,b){return a.f-b.f;}).filter(function(n){var m=mid[n.s]+n.f;if(seen[m])return false;seen[m]=1;return true;});}
+function upAsc(ns,mid){var seen={};return ns.slice().sort(function(a,b){return(mid[a.s]+a.f)-(mid[b.s]+b.f)||a.s-b.s;}).filter(function(n){var m=mid[n.s]+n.f;if(seen[m])return false;seen[m]=1;return true;});}
+function upJoin(a,b,mid){if(a.length&&b.length&&mid[a[a.length-1].s]+a[a.length-1].f===mid[b[0].s]+b[0].f)b=b.slice(1);return a.concat(b);}
+function upBack(q){return q.concat(q.slice(0,-1).reverse());}
+function upGroups(ns){var g=[[],[],[]];for(var s=0;s<ns;s++)g[Math.min(2,Math.floor(s*3/ns))].push(s);return g.filter(function(x){return x.length;});}
+function upRange(q){var a=99,b=0;q.forEach(function(n){a=Math.min(a,n.f);b=Math.max(b,n.f);});return a===b?'traste '+a:'trastes '+a+'–'+b;}
+function upList(){
+ var U=upPats(),P=U.pats,mid=U.mid,N=P.length,ns=mid.length,L=[];if(N<2)return L;
+ var own=P.map(function(p){return upPlace(p,(p.min+p.max)/2);});
+ var ctr=function(q){var a=99,b=0;q.forEach(function(n){a=Math.min(a,n.f);b=Math.max(b,n.f);});return(a+b)/2;};
+ for(var j=0;j<N;j++){var k=(j+1)%N,A=own[j],B=upPlace(P[k],ctr(A)+(ctr(own[k])>=ctr(A)||j===N-1?3:-3));
+  var q=upJoin(upAsc(A,mid),upAsc(B,mid).reverse(),mid);
+  L.push({g:'Parejas',n:'Patrón '+(j+1)+' sube, '+(k+1)+' baja · '+upRange(q),q:q});}
+ var o=P.map(function(_,i){return i;}).sort(function(a,b){return P[a].min-P[b].min;}),G=upGroups(ns);
+ function chain(ids){var q=[];G.forEach(function(gr,gi){var ps=own[ids[gi]];gr.forEach(function(s){q=upJoin(q,upStr(ps,s,mid),mid);});});return q;}
+ if(N>=G.length){
+  for(var a=0;a+G.length<=N;a++){var ids=o.slice(a,a+G.length),q1=upBack(chain(ids));
+   L.push({g:'Diagonales',n:'Diagonal subiendo '+ids.map(function(i){return i+1;}).join('→')+' · '+upRange(q1),q:q1});}
+  for(var b2=0;b2+G.length<=N;b2++){var ids2=o.slice(b2,b2+G.length).reverse(),q2=upBack(chain(ids2));
+   L.push({g:'Diagonales',n:'Diagonal hacia la cejuela '+ids2.map(function(i){return i+1;}).join('→')+' · '+upRange(q2),q:q2});}
+ }
+ if(N>=5&&ns>=4){
+  var up=chain(o.slice(0,G.length)),hi=[],lo2=[],half=Math.ceil(ns/2);
+  for(var s=ns-1;s>=ns-half;s--)hi=upJoin(hi,upStr(own[o[3]],s,mid).reverse(),mid);
+  for(var s2=ns-half-1;s2>=0;s2--)lo2=upJoin(lo2,upStr(own[o[4]],s2,mid).reverse(),mid);
+  var qz=upJoin(upJoin(up,hi,mid),lo2,mid);
+  L.push({g:'Diagonales',n:'Zigzag por 5 patrones '+o.slice(0,5).map(function(i){return i+1;}).join('→')+' · '+upRange(qz),q:qz});
+ }
+ return L;
+}
+function upHtml(){
+ var L=upList(),m=st.mb,h='<div class="card"><p class="big" style="margin:0 0 4px">Ejercicios para unir patrones</p><p class="muted" style="margin:0 0 8px">Elige uno y pulsa Cargar: se pone en la ruta (sustituye la actual). Después Escuchar o Tocar tú.</p>';
+ var r='';ROOTS.forEach(function(x,i){r+='<option value="'+i+'"'+(i===st.root?' selected':'')+'>'+nm(x.l,x.a)+'</option>';});
+ var g='',grp='';SCL.forEach(function(x){if(x.grp!==grp){if(grp)g+='</optgroup>';g+='<optgroup label="'+x.grp+'">';grp=x.grp;}g+='<option value="'+x.id+'"'+(x.id===st.scale?' selected':'')+'>'+x.name+'</option>';});
+ h+='<div class="row"><select id="upRoot" aria-label="Nota" style="flex:0 0 auto;width:auto;min-width:0">'+r+'</select><select id="upScale" aria-label="Escala" style="flex:1;min-width:0">'+g+'</optgroup></select></div>';
+ h+='<div class="row"><button class="seg" data-a="lowz" data-v="mb" aria-pressed="'+st.lowZ+'">Zona baja</button><span class="muted" style="font-size:13px;flex:1;min-width:0">'+(st.lowZ?'Lo más cerca de la cejuela, sin cuerdas al aire.':'Mástil completo, con cuerdas al aire.')+'</span></div>';
+ if(!L.length)return h+'<p class="muted" style="margin:0">Esta escala no tiene patrones para unir.</p></div>';
+ if(!(m.up>=0&&m.up<L.length))m.up=0;
+ var o='',gg='';L.forEach(function(e,i){if(e.g!==gg){if(gg)o+='</optgroup>';o+='<optgroup label="'+e.g+'">';gg=e.g;}o+='<option value="'+i+'"'+(i===m.up?' selected':'')+'>'+e.n+'</option>';});
+ h+='<div class="row"><select id="upEx" aria-label="Ejercicio" style="flex:1;min-width:0">'+o+'</optgroup></select><button class="main opt" data-a="upload" style="flex:0 0 auto;width:auto">Cargar</button></div>';
+ return h+'<p class="muted" style="margin:6px 0 0;font-size:13px">Parejas: subes por un patrón y bajas por el siguiente. Diagonales: cruzas el mástil cambiando de patrón cada dos cuerdas, ida y vuelta.</p></div>';
+}
+function upLoad(){
+ var L=upList(),m=st.mb,e=L[m.up>=0&&m.up<L.length?m.up:0];if(!e)return;
+ mbStop();mbs.res=null;m.seq=e.q.map(function(n){return{s:n.s,f:n.f};});
+ var c=cur();m.name=(nm(c.spec.l,c.spec.a)+' · '+e.n.split(' · ')[0]).slice(0,40);m.root=c.rootPc;
+ mbs.msg='Cargado: '+e.n+'. Pulsa Escuchar o Tocar tú.';save();mbFull();
+ var mn=99,mx=0;m.seq.forEach(function(n){mn=Math.min(mn,n.f);mx=Math.max(mx,n.f);});
+ var W=PADL*2+NF*MB_DX;mbs.sx=Math.max(0,st.lefty?W-(PADL+(mx+1)*MB_DX)-20:PADL+mn*MB_DX-20);
+ var sc=$('mbSc');if(sc)sc.scrollLeft=mbs.sx;
+}
 function mbHtml(){
  var m=st.mb,h=backB();
- h+='<div class="card"><p class="big" style="margin:0 0 4px">Ruta en el mástil</p><p class="muted" style="margin:0">Toca en el mástil las notas que quieras, en el orden en que las vas a tocar (puedes unir trozos de escalas en distintos trastes). Después escúchala o tócala tú con cuenta atrás y metrónomo.</p></div>';
+ h+='<div class="card"><p class="big" style="margin:0 0 4px">Ruta en el mástil</p><p class="muted" style="margin:0">Toca en el mástil las notas que quieras, en el orden en que las vas a tocar (puedes unir trozos de escalas en distintos trastes). Después escúchala o tócala tú con cuenta atrás y metrónomo.</p></div>'+upHtml();
  h+='<div class="row">';
  [['ord','Orden'],['note','Notas'],['int','Intervalos'],['fing','Dedos']].forEach(function(o){h+='<button class="seg" data-a="mblab" data-v="'+o[0]+'" aria-pressed="'+(m.lab===o[0])+'">'+o[1]+'</button>';});
  h+='</div>';
@@ -5435,6 +5503,8 @@ function act(a,v,el){
   case'tnote':{st.tnote=+v;save();var tb=$('ntab');if(tb){tb.innerHTML=ntabHtml();}playNote(60+NAT[+v]);break;}
   case'pat':{pStop();var i=+v,p=st.sel.indexOf(i);if(p>=0)st.sel.splice(p,1);else st.sel.push(i);st.sel.sort();rFret();save();break;}
   case'patall':pStop();st.sel=[];rFret();save();break;
+  case'lowz':pStop();mbStop();st.lowZ=!st.lowZ;save();if(v==='mb')mbFull();else rFret();break;
+  case'upload':upLoad();break;
   case'lab':st.lab=v;rFret('keep');save();break;
   case'latin':st.latin=v==='1';render();break;
   case'zoom':st.zoom=v==='1';rFret();save();break;
@@ -5500,6 +5570,8 @@ document.addEventListener('change',function(e){
  if(t.classList&&t.classList.contains('sfPre')){var sl=sfSlot(),sv=SFS[sl],ov=st.sf[sl];ov.p=+t.value<0?'':sfPresetKey(sv.pre[+t.value]);sv.ixk=null;save();sfRefresh();playMidis([52,59,64],0.07,1.8,true);return;}
  if(t.id==='bkIn'){if(t.files&&t.files[0])bkLoad(t.files[0]);return;}
  if(t.id==='mbName'){st.mb.name=t.value.trim();save();return;}
+ if(t.id==='upEx'){st.mb.up=+t.value;save();return;}
+ if(t.id==='upRoot'||t.id==='upScale'){mbStop();if(t.id==='upRoot')st.root=+t.value;else{st.scale=t.value;st.sel=st.scale==='pentmin'?[0]:[];}cp.i=-1;st.mb.up=0;save();rCtx();mbFull();return;}
  if(t.id==='esR'||t.id==='esS'){st.es[t.id==='esR'?'r':'s']=+t.value;save();esUpd();return;}
  if(t.id==='arEx'){arApply(t.value);return;}
  if({arRoot:1,arQ:1,arProg:1,arPat:1,arSS:1,arDu:1,arBpm:1,arGen:1}[t.id]){arSet(t.id,t.value);return;}
