@@ -30,4 +30,4 @@ Los datos (racha, canciones, progreso) se guardan en cada dirección web por sep
 
 ## Actualizar la app
 
-Sustituye el archivo cambiado en GitHub (**Add file → Upload files**) y, en `sw.js`, cambia `VERSION='v31'` por `'v24'` (y así sucesivamente). Al volver a abrir la app se actualiza sola.
+Sustituye el archivo cambiado en GitHub (**Add file → Upload files**) y, en `sw.js`, sube el número de `VERSION` (por ejemplo de `'v1.00.0'` a `'v1.00.1'`) y el mismo número en `APP_VER` de index.html. Al volver a abrir la app se actualiza sola.
