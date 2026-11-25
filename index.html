@@ -1134,7 +1134,7 @@ var cdT=null;
 function cdBeep(fr,du){try{var a=ac(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.4,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+du);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+du+0.02);}catch(e){}}
 function cdCancel(){clearInterval(cdT);cdT=null;var o=$('cdOv');if(o)o.remove();}
 function cdRun(fn){
- cdCancel();
+ cdCancel();stfTop();
  if(!st.cd){fn();return;}
  try{ac();}catch(e){}
  var n=3,o=document.createElement('div');o.id='cdOv';
@@ -1238,16 +1238,16 @@ function stfHi(root,i,cls,nf){var els=root.querySelectorAll('.ev'),hit=null;for(
 // Seguir la partitura al tocar: la línea actual y la siguiente deben verse enteras. Si no, la pantalla se mueve con suavidad
 // y deja la línea actual arriba, para ver siempre lo que viene. Si el usuario mueve la pantalla con el dedo, se pausa unos segundos.
 var STF_UT=0;try{['touchmove','wheel'].forEach(function(e){window.addEventListener(e,function(){STF_UT=Date.now();},{passive:true});});window.addEventListener('keydown',function(e){if(/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key))STF_UT=Date.now();});}catch(e){}
-function stfFollow(el){
+function stfFollow(el,force){
  try{
-  if(Date.now()-STF_UT<3000||STF_AN)return;
+  if(!force&&(Date.now()-STF_UT<3000||STF_AN))return;
   var svg=el.ownerSVGElement;if(!svg)return;var g=el;while(g.parentNode&&g.parentNode!==svg)g=g.parentNode;if(g.parentNode!==svg)g=svg;
   var r=g.getBoundingClientRect();if(!r.height)return;var nx=g.nextElementSibling;while(nx&&nx.tagName.toLowerCase()!=='g')nx=nx.nextElementSibling;var rb=nx?nx.getBoundingClientRect().bottom:r.bottom;
   var sc=svg.parentNode;while(sc&&sc.nodeType===1&&sc!==document.body&&sc!==document.documentElement){var cs=getComputedStyle(sc);if(/(auto|scroll)/.test(cs.overflowY)&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentNode;}
   var win=!sc||sc.nodeType!==1||sc===document.body||sc===document.documentElement,top=0,bot=innerHeight;
   if(win){var nv=document.querySelector('nav');if(nv&&nv.offsetParent!==null&&getComputedStyle(nv).position==='fixed')bot=Math.min(bot,nv.getBoundingClientRect().top);}
   else{var cr=sc.getBoundingClientRect();top=Math.max(0,cr.top);bot=Math.min(bot,cr.bottom);}
-  top+=4;bot-=8;if(rb-r.top>bot-top)rb=r.bottom;if(r.top>=top&&rb<=bot)return;
+  top+=4;bot-=8;if(rb-r.top>bot-top)rb=r.bottom;if(!force&&r.top>=top&&rb<=bot)return;
   stfScroll(win?null:sc,r.top-(top+6));
  }catch(e){}
 }
@@ -1266,11 +1266,17 @@ function stfScroll(box,d){
   if(k<1)a.raf=requestAnimationFrame(step);else STF_AN=null;
  })(a.t0);
 }
+// Al pulsar Escuchar / Tocar tú: antes de la cuenta atrás, sube la partitura (la que va después del botón pulsado) arriba de la pantalla.
+var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button');if(b)STF_BTN=b;},true);}catch(e){}
+function stfTop(){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
+ document.querySelectorAll('svg.stf').forEach(function(x){if(x.getBoundingClientRect().height&&x.querySelector('.ev'))v.push(x);});
+ if(b)for(var i=0;i<v.length;i++)if(b.compareDocumentPosition(v[i])&4){s=v[i];break;}
+ if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);}}catch(e){}}
 // Al arrancar (durante los clics de entrada) coloca a la vista la línea de la primera nota.
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='51'; // súbelo junto con VERSION de sw.js
+var APP_VER='52'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
