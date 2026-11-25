@@ -1286,7 +1286,7 @@ function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='56'; // súbelo junto con VERSION de sw.js
+var APP_VER='57'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -5672,6 +5672,6 @@ if(!PRG[st.bkProg])st.bkProg=5;if(!ROOTS[st.bkKey])st.bkKey=13;if(!SPAT[st.sPat]
 var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(st.tab==='fret')rFret('keep');else if(st.tab==='chords'&&cp.i>=0&&cp.x)drawChordNeck(cur(),cp.x,false);},150);});
 render();sfInit();
 </script>
-<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});</script>
+<script>if('serviceWorker' in navigator){var swHad=!!navigator.serviceWorker.controller,swRl=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(swHad&&!swRl){swRl=true;location.reload();}});window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(rg){document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')rg.update().catch(function(){});});}).catch(function(){});});}</script>
 </body>
 </html>
