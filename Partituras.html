@@ -482,7 +482,13 @@ let FOL_UT=0;['touchmove','wheel'].forEach(e=>window.addEventListener(e,()=>{FOL
 function follow(i){if(Date.now()-FOL_UT<3000)return;const p=EVX[i];if(!p)return;const el=$('score'),svg=el.querySelector('svg');if(!svg)return;
  const sc=svg.getBoundingClientRect().width/svg.viewBox.baseVal.width,y=svg.getBoundingClientRect().top+window.scrollY+p.y*sc,bar=$('bar').getBoundingClientRect().height;
  const vt=window.scrollY+bar+10,vb=window.scrollY+window.innerHeight-120*sc;
- if(y<vt||y>vb)window.scrollTo({top:Math.max(0,y-bar-20),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+ if((y<vt||y>vb)&&!FOL_AN)folScroll(Math.max(0,y-bar-20));}
+// Desplazamiento propio de 0,5 s (igual en móvil y PC); se corta si el usuario mueve la pantalla.
+let FOL_AN=null;
+function folScroll(y1){const y0=window.scrollY;if(Math.abs(y1-y0)<1)return;if(matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo(0,y1);return;}
+ const a={t0:performance.now(),ut:FOL_UT};FOL_AN=a;
+ const step=now=>{if(FOL_AN!==a)return;if(FOL_UT!==a.ut){FOL_AN=null;return;}const k=Math.min(1,(now-a.t0)/500),e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;window.scrollTo(0,y0+(y1-y0)*e);if(k<1)requestAnimationFrame(step);else FOL_AN=null;};
+ requestAnimationFrame(step);}
 function setProg(x){$('pProg').firstChild.style.width=(clamp(x,0,1)*100)+'%';}
 function modeBtns(m){document.querySelectorAll('#modes button').forEach(b=>{const on=b.dataset.m===m;b.classList.toggle('on',on);b.textContent=on?'■ Parar':({play:'▶ Escuchar',wait:'🎯 Practicar',test:'🏁 Examen'})[b.dataset.m];});}
 
