@@ -758,13 +758,13 @@ var NPBN=['1 nota por pulso','2 por pulso (corcheas)','3 por pulso (tresillos)',
 function pracHtml(){
  var sel=st.sel.length?st.sel.map(function(i){return i+1;}).join(', '):'todos';
  var ex=EXN.filter(function(e){return e[0]===st.prEx;})[0]||EXN[2];
- var h='<div class="card" id="prac"><h2>Practicar con guía</h2><p class="muted" style="margin-bottom:10px">Patrones que sonarán: '+sel+'. Elige uno o varios arriba. Con varios se tocan uno tras otro.</p>';
+ var h='<div class="card" id="prac"><h2>Practicar con guía</h2><p class="muted" style="margin-bottom:10px">Patrones que sonarán: '+sel+'. Elige uno arriba, o «Todo» para tocarlos uno tras otro.</p>';
  h+='<div class="row" style="margin-bottom:4px"><select id="selEx" aria-label="Ejercicio">'+EXN.map(function(e){return'<option value="'+e[0]+'"'+(e[0]===st.prEx?' selected':'')+'>'+e[1]+'</option>';}).join('')+'</select></div>';
  h+='<p class="muted" id="exDesc" style="margin:0 0 10px">'+ex[2]+'</p>';
  h+='<div class="row"><span class="muted">Tempo</span><b id="prBpmV">'+st.prBpm+' BPM</b></div><input type="range" id="prBpm" min="30" max="200" step="1" value="'+st.prBpm+'" aria-label="Tempo en pulsaciones por minuto">';
  h+='<div class="row" style="margin:6px 0 10px"><select id="selNpb" aria-label="Notas por pulso">'+NPBN.map(function(t,i){return'<option value="'+(i+1)+'"'+(st.prNpb===i+1?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>';
  h+='<div class="row"><button class="seg" data-a="prloop" aria-pressed="'+st.prLoop+'">Repetir</button><button class="seg" data-a="prclick" aria-pressed="'+st.prClick+'">Click</button><button class="main" data-a="pgo" id="pgo" style="flex:1;min-height:48px">'+(pr.running?'Parar':'Empezar')+'</button></div>';
- h+='<div style="margin-top:12px;display:flex;align-items:baseline;gap:14px"><span class="big" id="prNote" style="font-size:36px;min-width:84px">—</span><span class="muted" id="prInfo">Pulsa Empezar: cada nota se ilumina en el mástil justo cuando suena. El círculo punteado marca la siguiente.</span></div></div>';
+ h+='<div style="margin-top:12px;display:flex;align-items:baseline;gap:14px"><span class="big" id="prNote" style="font-size:36px;min-width:84px">—</span><span class="muted" id="prInfo">Pulsa Empezar: el mástil sube arriba y cada nota se ilumina justo cuando suena. El círculo punteado marca la siguiente.</span></div></div>';
  return h;
 }
 function patBase(j){
@@ -851,7 +851,7 @@ function pStop(){
  pr.running=false;clearInterval(pr.timer);cancelAnimationFrame(pr.raf);pr.q=[];
  var g=$('hl');if(g)g.innerHTML='';
  if($('pgo'))$('pgo').textContent='Empezar';if($('prNote'))$('prNote').textContent='—';
- if($('prInfo'))$('prInfo').textContent='Pulsa Empezar: cada nota se ilumina en el mástil justo cuando suena. El círculo punteado marca la siguiente.';
+ if($('prInfo'))$('prInfo').textContent='Pulsa Empezar: el mástil sube arriba y cada nota se ilumina justo cuando suena. El círculo punteado marca la siguiente.';
 }
 function scrollPat(pats){
  var sc=$('scroll');if(!sc)return;var g=geomF(1),DX=g.DX,W=g.W;
@@ -1271,12 +1271,14 @@ var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.targe
 function stfTop(){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
  document.querySelectorAll('svg.stf').forEach(function(x){if(x.getBoundingClientRect().height&&x.querySelector('.ev'))v.push(x);});
  if(b)for(var i=0;i<v.length;i++)if(b.compareDocumentPosition(v[i])&4){s=v[i];break;}
- if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);}}catch(e){}}
+ if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);return;}
+ // «Empezar» de Practicar con guía (pestaña Mástil): sube el mástil arriba de la pantalla.
+ var nk=b&&b.id==='pgo'&&$('neck'),bd=nk&&nk.closest('.board');if(bd&&bd.getBoundingClientRect().height){STF_UT=0;stfScroll(null,bd.getBoundingClientRect().top-10);}}catch(e){}}
 // Al arrancar (durante los clics de entrada) coloca a la vista la línea de la primera nota.
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='52'; // súbelo junto con VERSION de sw.js
+var APP_VER='53'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
