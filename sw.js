@@ -1,5 +1,5 @@
 // Service worker de Taller de Guitarra: mmg. Sube el número de VERSION cuando publiques cambios.
-var VERSION='v47',CACHE='taller-guitarra-'+VERSION;
+var VERSION='v48',CACHE='taller-guitarra-'+VERSION;
 var FILES=['./','index.html','Afinador.html','Partituras.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.svg'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(FILES);}).then(function(){return self.skipWaiting();}));});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k.indexOf('taller-guitarra-')===0&&k!==CACHE;}).map(function(k){return caches.delete(k);}));}).then(function(){return self.clients.claim();}));});

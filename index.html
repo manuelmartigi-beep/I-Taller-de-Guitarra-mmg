@@ -28,21 +28,21 @@
  --yl-bg:#FFF4C2;--yl-fg:#5A4300;--yl-line:#E6B800;--yl-btn:#F5C400;--yl-btn-fg:#2B2000;
  --p1:#6B5CE0;--p2:#0E9378;--p3:#D8532B;--p4:#A56A06;--p5:#2573CF;--p6:#B8366F;--p7:#5E8A12;
  --head:'Space Grotesk',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;
- --hd:var(--fg);--hd2:var(--muted);--cb:transparent;--cbl:var(--line);--sel:var(--ctl-on);--sel-fg:var(--ctl-on-fg);--selacc:var(--acc);--selacc-fg:#fff;--nav-on:var(--acc);--main:var(--acc);--main-fg:#fff;
+ --hd:var(--fg);--hd2:var(--muted);--cb:transparent;--cbl:var(--line);--sel:var(--ctl-on);--sel-fg:var(--ctl-on-fg);--selacc:var(--acc);--selacc-fg:#fff;--pat-on-fg:#fff;--nav-on:var(--acc);--main:var(--acc);--main-fg:#fff;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
  --bg:#0F1419;--panel:#171D24;--board:#1C242D;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--string:#7F8C99;
  --dot-off:#232C36;--dot-off-line:#3B4856;--dot-off-fg:#7A8895;--ctl:#212A34;--ctl-on:#E7ECF1;--ctl-on-fg:#0F1419;
  --acc:#F0883E;--acc-soft:#3B2614;--good:#FFE3A3;--bad:#FF6B5E;--on-c:#1A1200;
  --yl-bg:#3A3000;--yl-fg:#FFD84D;--yl-line:#F5C400;--yl-btn:#F5C400;--yl-btn-fg:#2B2000;
- --hd:#F5C400;--hd2:#F5C400;--cb:#F5C400;--cbl:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--selacc:#F5C400;--selacc-fg:#2B2000;--nav-on:#F5C400;--main:#F5C400;--main-fg:#2B2000;
+ --hd:#F5C400;--hd2:#F5C400;--cb:#F5C400;--cbl:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--selacc:#F5C400;--selacc-fg:#2B2000;--pat-on-fg:#0F1419;--nav-on:#F5C400;--main:#F5C400;--main-fg:#2B2000;
  --p1:#8B7FF2;--p2:#22B496;--p3:#EE7048;--p4:#C48A1E;--p5:#4A94EA;--p6:#E0609C;--p7:#8DB83A;color-scheme:dark}}
 :root[data-theme="dark"]{
  --bg:#0F1419;--panel:#171D24;--board:#1C242D;--fg:#E7ECF1;--muted:#93A0AD;--line:#33404D;--string:#7F8C99;
  --dot-off:#232C36;--dot-off-line:#3B4856;--dot-off-fg:#7A8895;--ctl:#212A34;--ctl-on:#E7ECF1;--ctl-on-fg:#0F1419;
  --acc:#F0883E;--acc-soft:#3B2614;--good:#FFE3A3;--bad:#FF6B5E;--on-c:#1A1200;
  --yl-bg:#3A3000;--yl-fg:#FFD84D;--yl-line:#F5C400;--yl-btn:#F5C400;--yl-btn-fg:#2B2000;
- --hd:#F5C400;--hd2:#F5C400;--cb:#F5C400;--cbl:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--selacc:#F5C400;--selacc-fg:#2B2000;--nav-on:#F5C400;--main:#F5C400;--main-fg:#2B2000;
+ --hd:#F5C400;--hd2:#F5C400;--cb:#F5C400;--cbl:#F5C400;--sel:#F5C400;--sel-fg:#2B2000;--selacc:#F5C400;--selacc-fg:#2B2000;--pat-on-fg:#0F1419;--nav-on:#F5C400;--main:#F5C400;--main-fg:#2B2000;
  --p1:#8B7FF2;--p2:#22B496;--p3:#EE7048;--p4:#C48A1E;--p5:#4A94EA;--p6:#E0609C;--p7:#8DB83A;color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -61,7 +61,8 @@ button{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 select{padding:0 8px;max-width:100%;flex:1;min-width:0}
 button:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 button[aria-pressed="true"].seg{background:var(--sel);color:var(--sel-fg)}
-button.pat[aria-pressed="true"]{background:var(--panel);border-color:var(--c)}
+button.pat[aria-pressed="true"]{background:var(--c);border:2.5px solid var(--c);color:var(--pat-on-fg);font-weight:700;box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--c)}
+button.pat[aria-pressed="true"] .sw{background:var(--pat-on-fg)}
 button.main{background:var(--main);color:var(--main-fg)}
 .sw{width:11px;height:11px;border-radius:50%;background:var(--c);opacity:.35}
 button[aria-pressed="true"] .sw{opacity:1}
@@ -665,11 +666,11 @@ var Y0=26,DY=34,PADL=4;
 function rFret(){
  var c=cur(),mid=c.tun.midi,ns=mid.length,pats=genPatterns(c.sc,c.rootPc,mid);
  applyFingers(pats,c.sc,st.tun);lowZone(pats);curPats=pats;
- var N=pats.length;st.sel=st.sel.filter(function(x){return x<N;});
+ var N=pats.length;st.sel=st.sel.filter(function(x){return x<N;}).slice(0,1);
  var spc={};c.sp.forEach(function(x){spc[x.pc]=x;});
  var h='<div class="degs">'+c.sp.map(function(x,i){return'<div class="deg'+(i===0?' r':'')+'"><b>'+nm(x.l,x.a)+'</b><span>'+accStr(x.acc)+x.deg+'</span><span>'+INT[x.semi]+'</span></div>';}).join('')+'</div>';
  h+='<div class="row"><button class="seg" data-a="patall" aria-pressed="'+(st.sel.length===0)+'">Todo</button>';
- for(var j=0;j<N;j++)h+='<button class="pat" style="--c:'+pcolor(j)+'" data-a="pat" data-v="'+j+'" aria-pressed="'+(st.sel.indexOf(j)>=0)+'"><span class="sw"></span>Patrón '+(j+1)+'</button>';
+ for(var j=0;j<N;j++)h+='<button class="pat" style="--c:'+pcolor(j)+'" data-a="pat" data-v="'+j+'" aria-pressed="'+(st.sel.indexOf(j)>=0)+'"><span class="sw"></span>'+(st.sel.indexOf(j)>=0?'✓ ':'')+'Patrón '+(j+1)+'</button>';
  h+='</div><div class="row"><button class="seg" data-a="lowz" data-v="fret" aria-pressed="'+st.lowZ+'">Zona baja</button><span class="muted" style="font-size:13px;flex:1;min-width:0">'+(st.lowZ?'Cada patrón lo más cerca de la cejuela, sin cuerdas al aire.':'Mástil completo, con cuerdas al aire.')+'</span></div><div class="row">';
  [['notes','Notas'],['deg','Grados'],['int','Intervalos'],['fing','Dedos']].forEach(function(o){h+='<button class="seg" data-a="lab" data-v="'+o[0]+'" aria-pressed="'+(st.lab===o[0])+'">'+o[1]+'</button>';});
  h+='</div>';
@@ -680,7 +681,7 @@ function rFret(){
  var info='';
  if(st.sel.length===0)info='<p class="big">Escala completa</p><p class="muted">'+esc(c.sc.desc)+'</p>';
  else if(st.sel.length===1){var p=st.sel[0],q=(p+1)%N,rg=sharedRange(pats,p);
-  info='<p class="big">Patrón '+(p+1)+' · trastes '+pats[p].min+'–'+pats[p].max+'</p><p class="muted">'+(rg?'Se une con el patrón '+(q+1)+' en '+(rg[0]===rg[1]?'el traste '+rg[0]:'los trastes '+rg[0]+'–'+rg[1])+'. Activa ambos para ver las notas comunes con aro.':'')+'</p>';}
+  info='<p class="big">Patrón '+(p+1)+' · trastes '+pats[p].min+'–'+pats[p].max+'</p><p class="muted">'+(rg?'Se une con el patrón '+(q+1)+' en '+(rg[0]===rg[1]?'el traste '+rg[0]:'los trastes '+rg[0]+'–'+rg[1])+'.':'')+' Vuelve a tocarlo o pulsa «Todo» para ver la escala completa.</p>';}
  else info='<p class="big">Patrones '+st.sel.map(function(i){return i+1;}).join(', ')+'</p><p class="muted">Las notas con aro de dos colores pertenecen a dos patrones a la vez.</p>';
  if(st.lab==='fing'&&st.sel.length===0)info+='<p class="muted">Elige un patrón para ver los dedos. 1 índice, 2 corazón, 3 anular, 4 meñique.</p>';
  h+='<div class="card">'+info+'</div>';
@@ -752,7 +753,7 @@ var pr={running:false,seq:[],i:0,next:0,timer:null,q:[],raf:0,spc:{},beatN:0,end
 var EXN=[['asc','Subir','De la nota más grave a la más aguda, patrón por patrón.'],['desc','Bajar','De la más aguda a la más grave.'],['updown','Subir y bajar','Sube y vuelve a bajar sin repetir la nota de arriba.'],
  ['thirds','Saltos de 3ª','Notas alternas: 1-3, 2-4, 3-5… y luego de vuelta.'],['g3','Grupos de 3','1-2-3, 2-3-4, 3-4-5… sube y vuelve a bajar. Gran ejercicio de digitación.'],
  ['g4','Grupos de 4','1-2-3-4, 2-3-4-5… sube y vuelve a bajar.'],['rand','Aleatorio','Notas al azar de los patrones elegidos. Entrena la memoria del mástil.'],
- ['walk','Melodía guiada','Un camino de notas cercanas, como si improvisaras. Con varios patrones los mezcla.']];
+ ['walk','Melodía guiada','Un camino de notas cercanas, como si improvisaras. Sin patrón elegido recorre todos.']];
 var NPBN=['1 nota por pulso','2 por pulso (corcheas)','3 por pulso (tresillos)','4 por pulso (semicorcheas)'];
 function pracHtml(){
  var sel=st.sel.length?st.sel.map(function(i){return i+1;}).join(', '):'todos';
@@ -1236,7 +1237,7 @@ var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10
 function stfHi(root,i,cls){var els=root.querySelectorAll('.ev');for(var k=0;k<els.length;k++){var el=els[k];el.setAttribute('class','ev'+(String(k)===String(i)&&cls?' '+cls:''));}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='47'; // súbelo junto con VERSION de sw.js
+var APP_VER='48'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -2908,7 +2909,7 @@ function gsClose(){var d=$('gs');if(d)d.hidden=true;}
 var HELP={
  study:{t:'Estudio · Lecciones',w:'Aprende la teoría con lecciones cortas, agrupadas por temas.',s:['Abre una lección y léela con calma.','Pulsa «Oír» en los ejemplos para escuchar lo que explica.','Márcala como hecha cuando la tengas clara.','Para practicar, pasa a «Ejercicios» (arriba), donde también está el Plan de 8 semanas.','El botón 🔍 busca en toda la app.']},
  studyEx:{t:'Estudio · Ejercicios',w:'Práctica guiada: cada ejercicio entrena una habilidad distinta.',s:['Elige un ejercicio de la lista. Todos se hacen en una sola pantalla.','Pulsa ☆ para fijar tus favoritos arriba.','Dentro de cada ejercicio, este botón ? te explica cómo usarlo.','Para volver a la lista, pulsa «← Ejercicios».']},
- fret:{t:'Mástil',w:'Muestra dónde están las notas de una escala sobre el mástil de la guitarra.',s:['Elige la nota de partida y la escala en los desplegables de arriba.','Toca cualquier nota del mástil para oírla. El borde marcado es la tónica. Desliza el mástil para recorrerlo.','Elige un patrón para ver qué dedo usar (1 índice, 2 corazón, 3 anular, 4 meñique).','«Zona baja» coloca cada patrón lo más cerca posible de la cejuela, sin cuerdas al aire: ideal para guitarra española. Desactívalo para ver el mástil completo, con cuerdas al aire.','En «Opciones del mástil» puedes cambiar los nombres (Do Re Mi) y el tamaño.']},
+ fret:{t:'Mástil',w:'Muestra dónde están las notas de una escala sobre el mástil de la guitarra.',s:['Elige la nota de partida y la escala en los desplegables de arriba.','Toca cualquier nota del mástil para oírla. El borde marcado es la tónica. Desliza el mástil para recorrerlo.','Toca un patrón para verlo solo (queda relleno de su color y con ✓). Vuelve a tocarlo o pulsa «Todo» para ver la escala completa.','Elige un patrón para ver qué dedo usar (1 índice, 2 corazón, 3 anular, 4 meñique).','«Zona baja» coloca cada patrón lo más cerca posible de la cejuela, sin cuerdas al aire: ideal para guitarra española. Desactívalo para ver el mástil completo, con cuerdas al aire.','En «Opciones del mástil» puedes cambiar los nombres (Do Re Mi) y el tamaño.']},
  circle:{t:'Círculo',w:'Muestra las tonalidades y qué acordes suenan bien juntos.',s:['Toca una tonalidad en el círculo (mayores y menores).','Debajo ves sus alteraciones, su relativa y las notas de la escala.','Toca un acorde de la lista para oírlo. Elige entre Tríadas y Séptimas.','«Usar en el mástil» lleva esa tonalidad a la pestaña Mástil.']},
  chords:{t:'Acordes',w:'Muestra los acordes de una tonalidad y cómo se tocan, con diagrama y sonido.',s:['Elige la nota y la escala arriba (mayor o menor funciona mejor).','Toca un acorde para oírlo. Elige entre Tríadas y Séptimas.','En «Posiciones» elige una forma de tocarlo y míralo en el mástil.','Más abajo tienes progresiones habituales para probar.','Para un acorde concreto, usa el buscador de acordes.']},
  ear:{t:'Oído',w:'Entrena el oído para reconocer escalas, intervalos y acordes.',s:['Escala: elige nota y escala y pulsa ▶ para oírla subiendo o bajando.','Intervalos: pulsa un botón para aprender cómo suena, o «Nuevo intervalo» y adivina.','Acordes: igual; pulsa un tipo para oírlo o «Nuevo acorde» y adivina.','«Repetir» vuelve a sonar lo último. Tu puntuación sale debajo.']},
@@ -5501,7 +5502,7 @@ function act(a,v,el){
   case'nplay':playNote(60+(+v));break;
   case'nplayx':playNote(60+(+v));break;
   case'tnote':{st.tnote=+v;save();var tb=$('ntab');if(tb){tb.innerHTML=ntabHtml();}playNote(60+NAT[+v]);break;}
-  case'pat':{pStop();var i=+v,p=st.sel.indexOf(i);if(p>=0)st.sel.splice(p,1);else st.sel.push(i);st.sel.sort();rFret();save();break;}
+  case'pat':{pStop();var i=+v;st.sel=(st.sel.length===1&&st.sel[0]===i)?[]:[i];rFret();save();break;}
   case'patall':pStop();st.sel=[];rFret();save();break;
   case'lowz':pStop();mbStop();st.lowZ=!st.lowZ;save();if(v==='mb')mbFull();else rFret();break;
   case'upload':upLoad();break;
