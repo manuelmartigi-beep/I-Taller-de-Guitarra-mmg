@@ -478,7 +478,8 @@ function setDet(m){$('det').textContent=m>=0?nname(m).replace(/-?\d+$/,''):'—'
 function mark(i,cls){const el=$('score').querySelector('.ev[data-i="'+i+'"]');if(el)el.setAttribute('class','ev'+(cls?' '+cls:''));}
 function clearMarks(){$('score').querySelectorAll('.ev').forEach(el=>el.setAttribute('class','ev'));$('score').querySelectorAll('.mb.cur').forEach(el=>el.classList.remove('cur'));}
 function curMeas(mi){$('score').querySelectorAll('.mb.cur').forEach(el=>el.classList.remove('cur'));const r=$('score').querySelector('.mb[data-m="'+mi+'"]');if(r)r.classList.add('cur');}
-function follow(i){const p=EVX[i];if(!p)return;const el=$('score'),svg=el.querySelector('svg');if(!svg)return;
+let FOL_UT=0;['touchmove','wheel'].forEach(e=>window.addEventListener(e,()=>{FOL_UT=Date.now();},{passive:true}));
+function follow(i){if(Date.now()-FOL_UT<3000)return;const p=EVX[i];if(!p)return;const el=$('score'),svg=el.querySelector('svg');if(!svg)return;
  const sc=svg.getBoundingClientRect().width/svg.viewBox.baseVal.width,y=svg.getBoundingClientRect().top+window.scrollY+p.y*sc,bar=$('bar').getBoundingClientRect().height;
  const vt=window.scrollY+bar+10,vb=window.scrollY+window.innerHeight-120*sc;
  if(y<vt||y>vb)window.scrollTo({top:Math.max(0,y-bar-20),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}

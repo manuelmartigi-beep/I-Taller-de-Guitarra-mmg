@@ -1234,10 +1234,29 @@ function stfY(n){return 40-(n-30)*5;}
 function stfBest(m){var b=null,s,f;for(s=0;s<6;s++){f=m-STF_OPEN[s];if(f>=0&&f<=12&&(!b||f<b.f||(f===b.f&&s>b.s)))b={s:s,f:f};}return b||{s:5,f:Math.max(0,m-64)};}
 var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10 C 25 -7 19 6 14 14 C 5 26 5 38 14 40 C 23 42 26 31 19 26 C 14 22 8 27 10 33 C 11 36 16 36 17 32';
 (function(){try{var s=document.createElement('style');s.textContent='.stf{display:block;margin:0 auto}.stf .ev{color:var(--fg)}.stf .ev.on{color:var(--acc)}.stf .ev.ok{color:var(--good)}.stf .ev.no{color:var(--bad)}.stf .ev.dim{color:var(--muted)}.stf .ev *{transition:none}.stf .cn{fill:var(--muted)}.stf .cn.on{fill:var(--acc);font-size:17px}.stf .lyr{fill:var(--fg)}.stf .lyr.on{fill:var(--acc)}';document.head.appendChild(s);}catch(e){}})();
-function stfHi(root,i,cls){var els=root.querySelectorAll('.ev');for(var k=0;k<els.length;k++){var el=els[k];el.setAttribute('class','ev'+(String(k)===String(i)&&cls?' '+cls:''));}}
+function stfHi(root,i,cls,nf){var els=root.querySelectorAll('.ev'),hit=null;for(var k=0;k<els.length;k++){var el=els[k],on=String(k)===String(i)&&cls;el.setAttribute('class','ev'+(on?' '+cls:''));if(on)hit=el;}if(hit&&!nf)stfFollow(hit);}
+// Seguir la partitura al tocar: si la línea de la nota actual no se ve entera, baja (o sube) la pantalla con suavidad
+// para dejarla en el tercio superior. Si el usuario mueve la pantalla con el dedo, se pausa unos segundos.
+var STF_UT=0;try{['touchmove','wheel'].forEach(function(e){window.addEventListener(e,function(){STF_UT=Date.now();},{passive:true});});window.addEventListener('keydown',function(e){if(/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key))STF_UT=Date.now();});}catch(e){}
+function stfFollow(el){
+ try{
+  if(Date.now()-STF_UT<3000)return;
+  var svg=el.ownerSVGElement;if(!svg)return;var g=el;while(g.parentNode&&g.parentNode!==svg)g=g.parentNode;if(g.parentNode!==svg)g=svg;
+  var r=g.getBoundingClientRect();if(!r.height)return;
+  var sc=svg.parentNode;while(sc&&sc.nodeType===1&&sc!==document.body&&sc!==document.documentElement){var cs=getComputedStyle(sc);if(/(auto|scroll)/.test(cs.overflowY)&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentNode;}
+  var win=!sc||sc.nodeType!==1||sc===document.body||sc===document.documentElement,top=0,bot=innerHeight;
+  if(win){var nv=document.querySelector('nav');if(nv&&nv.offsetParent!==null&&getComputedStyle(nv).position==='fixed')bot=Math.min(bot,nv.getBoundingClientRect().top);}
+  else{var cr=sc.getBoundingClientRect();top=Math.max(0,cr.top);bot=Math.min(bot,cr.bottom);}
+  top+=4;bot-=8;if(r.top>=top&&r.bottom<=bot)return;
+  var av=bot-top,d=r.top-(top+(r.height<=av*0.78?av*0.2:6)),bh=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+  if(win)window.scrollBy({top:d,behavior:bh});else sc.scrollBy({top:d,behavior:bh});
+ }catch(e){}
+}
+// Al arrancar (durante los clics de entrada) coloca a la vista la línea de la primera nota.
+function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='48'; // súbelo junto con VERSION de sw.js
+var APP_VER='49'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -1603,6 +1622,7 @@ function sqStart(L,total,bpm,o){
  sq.seq=seq;sq.c0=0;for(j=0;j<seq.length;j++)if(seq[j].b>=0){sq.c0=j;break;}
  sq.k=0;sq.cyc=0;sq.cb=cb;sq.bt=o.beats||4;sq.total=total;sq.spb=60/bpm;sq.o=o;sq.q=[];sq.done=false;sq.on=true;
  sq.t0=a.currentTime+0.12;sqSched();sq.timer=setInterval(sqSched,25);sq.raf=requestAnimationFrame(sqAnim);
+ if(o.show)for(j=0;j<seq.length;j++)if(!seq[j].c&&seq[j].i!=null){stfPre(seq[j].i);break;}
 }
 function sqSched(){
  if(!sq.on)return;var a=ac(),now=a.currentTime;
@@ -1624,8 +1644,8 @@ function segB(a,v,label,on){return'<button class="seg opt" data-a="'+a+'" data-v
 var EX_HELP={
  plan:'Sigue un objetivo tras otro. Marca cada uno con el círculo cuando lo hayas hecho; los botones te llevan directo al ejercicio.',
  ivt:'Elige un modo. En «Aprender» pulsa un intervalo y mira cómo se dibuja. En los otros, responde tocando en el mástil o eligiendo el nombre. R es la nota de partida.',
- route:'Toca en el mástil las notas que quieras tocar, en orden, o carga uno de los «Ejercicios para unir patrones»: parejas (subes por un patrón y bajas por el siguiente) y diagonales (cruzas el mástil cambiando de patrón). Con «Zona baja» los ejercicios quedan cerca de la cejuela y sin cuerdas al aire. Después pulsa «Escuchar» o «Tocar tú». Activa «Evaluar con micrófono» si quieres que la app compruebe tus notas.',
- arp:'Elige un ejercicio guiado o configura el tuyo: acorde, patrón, figura y tempo. «Escuchar» lo reproduce; «Tocar tú» solo pone el metrónomo y el cursor te marca la nota. Activa el micrófono si quieres que la app te evalúe.',
+ route:'Toca en el mástil las notas que quieras tocar, en orden, o carga uno de los «Ejercicios para unir patrones»: parejas (subes por un patrón y bajas por el siguiente) y diagonales (cruzas el mástil cambiando de patrón). Con «Zona baja» los ejercicios quedan cerca de la cejuela y sin cuerdas al aire. Después pulsa «Escuchar» o «Tocar tú». Activa «Evaluar con micrófono» si quieres que la app compruebe tus notas. Mientras suena, la pantalla baja sola para que la partitura se vea siempre.',
+ arp:'Elige un ejercicio guiado o configura el tuyo: acorde, patrón, figura y tempo. «Escuchar» lo reproduce; «Tocar tú» solo pone el metrónomo y el cursor te marca la nota. Activa el micrófono si quieres que la app te evalúe. Mientras suena, la pantalla baja sola para que la partitura se vea siempre.',
  cchg:'Toca los acordes que quieras practicar (mínimo 2). Elige cada cuántos segundos cambia, o «Manual» para marcar tú los cambios limpios.',
  warm:'Ejercicios de digitación para calentar las manos. Sigue el patrón con el metrónomo, empezando despacio.',
  impro:'Elige tonalidad y base de acordes. Suena la base y tú improvisas con la escala que se ve en el mástil.',
@@ -5132,7 +5152,7 @@ function feLoad(file){
  else if(ext==='xml'||ext==='musicxml')file.text().then(function(t){ok(feXml(t));}).catch(fail);
  else fail(new Error('Formato no admitido. Prueba con MusicXML (.musicxml, .xml, .mxl), MIDI (.mid), imagen o PDF'));
 }
-function feShow(i){fe.play=i;var r=$('feStaff');if(r)stfHi(r,i>=0?i:fe.sel,'on');var b=$('feBoard');if(b)b.innerHTML=feBoard();}
+function feShow(i){fe.play=i;var r=$('feStaff');if(r)stfHi(r,i>=0?i:fe.sel,'on',i<0);var b=$('feBoard');if(b)b.innerHTML=feBoard();}
 function feSeq(M){
  var seq=[],i=0,start=0,pass=1,n=M.length,guard=0;
  while(i<n&&guard++<600){var m=M[i],f0=m[0],l0=m[m.length-1];
