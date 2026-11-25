@@ -1235,20 +1235,20 @@ function stfBest(m){var b=null,s,f;for(s=0;s<6;s++){f=m-STF_OPEN[s];if(f>=0&&f<=
 var STF_CLEF='M 8 50 C 8 56 18 57 18 50 C 18 44 13 20 13 8 C 13 -4 18 -12 21 -10 C 25 -7 19 6 14 14 C 5 26 5 38 14 40 C 23 42 26 31 19 26 C 14 22 8 27 10 33 C 11 36 16 36 17 32';
 (function(){try{var s=document.createElement('style');s.textContent='.stf{display:block;margin:0 auto}.stf .ev{color:var(--fg)}.stf .ev.on{color:var(--acc)}.stf .ev.ok{color:var(--good)}.stf .ev.no{color:var(--bad)}.stf .ev.dim{color:var(--muted)}.stf .ev *{transition:none}.stf .cn{fill:var(--muted)}.stf .cn.on{fill:var(--acc);font-size:17px}.stf .lyr{fill:var(--fg)}.stf .lyr.on{fill:var(--acc)}';document.head.appendChild(s);}catch(e){}})();
 function stfHi(root,i,cls,nf){var els=root.querySelectorAll('.ev'),hit=null;for(var k=0;k<els.length;k++){var el=els[k],on=String(k)===String(i)&&cls;el.setAttribute('class','ev'+(on?' '+cls:''));if(on)hit=el;}if(hit&&!nf)stfFollow(hit);}
-// Seguir la partitura al tocar: si la línea de la nota actual no se ve entera, baja (o sube) la pantalla con suavidad
-// para dejarla en el tercio superior. Si el usuario mueve la pantalla con el dedo, se pausa unos segundos.
+// Seguir la partitura al tocar: la línea actual y la siguiente deben verse enteras. Si no, la pantalla se mueve con suavidad
+// y deja la línea actual arriba, para ver siempre lo que viene. Si el usuario mueve la pantalla con el dedo, se pausa unos segundos.
 var STF_UT=0;try{['touchmove','wheel'].forEach(function(e){window.addEventListener(e,function(){STF_UT=Date.now();},{passive:true});});window.addEventListener('keydown',function(e){if(/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key))STF_UT=Date.now();});}catch(e){}
 function stfFollow(el){
  try{
   if(Date.now()-STF_UT<3000)return;
   var svg=el.ownerSVGElement;if(!svg)return;var g=el;while(g.parentNode&&g.parentNode!==svg)g=g.parentNode;if(g.parentNode!==svg)g=svg;
-  var r=g.getBoundingClientRect();if(!r.height)return;
+  var r=g.getBoundingClientRect();if(!r.height)return;var nx=g.nextElementSibling;while(nx&&nx.tagName.toLowerCase()!=='g')nx=nx.nextElementSibling;var rb=nx?nx.getBoundingClientRect().bottom:r.bottom;
   var sc=svg.parentNode;while(sc&&sc.nodeType===1&&sc!==document.body&&sc!==document.documentElement){var cs=getComputedStyle(sc);if(/(auto|scroll)/.test(cs.overflowY)&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentNode;}
   var win=!sc||sc.nodeType!==1||sc===document.body||sc===document.documentElement,top=0,bot=innerHeight;
   if(win){var nv=document.querySelector('nav');if(nv&&nv.offsetParent!==null&&getComputedStyle(nv).position==='fixed')bot=Math.min(bot,nv.getBoundingClientRect().top);}
   else{var cr=sc.getBoundingClientRect();top=Math.max(0,cr.top);bot=Math.min(bot,cr.bottom);}
-  top+=4;bot-=8;if(r.top>=top&&r.bottom<=bot)return;
-  var av=bot-top,d=r.top-(top+(r.height<=av*0.78?av*0.2:6)),bh=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+  top+=4;bot-=8;if(rb-r.top>bot-top)rb=r.bottom;if(r.top>=top&&rb<=bot)return;
+  var d=r.top-(top+6),bh=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
   if(win)window.scrollBy({top:d,behavior:bh});else sc.scrollBy({top:d,behavior:bh});
  }catch(e){}
 }
@@ -1256,7 +1256,7 @@ function stfFollow(el){
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='49'; // súbelo junto con VERSION de sw.js
+var APP_VER='50'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
