@@ -1286,7 +1286,7 @@ function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='1.00.0'; // súbelo junto con VERSION de sw.js
+var APP_VER='1.00.1'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -1440,6 +1440,7 @@ function stfRender(meas,o){
  var rhY=0;if(anyRh){rhY=bot0+12;bot0+=22;}
  var anyCn=false,anyLy=false;FL.forEach(function(x){if(x.cnt&&x.cnt.length)anyCn=true;if(x.lyr)anyLy=true;});
  var cnY=0,lyY=0;if(anyCn){cnY=bot0+14;bot0+=20;}if(anyLy){lyY=bot0+14;bot0+=22;}
+ if(o.top!=null)top0=Math.min(top0,o.top);if(o.bot!=null)bot0=Math.max(bot0,o.bot);
  if(o.hit)STF_HIT={y:top0,h:bot0-top0};else STF_HIT=null;
  var mw=M.map(function(m){var t=14+(m.length&&m[0].rs?10:0),lb=m.length?m[m.length-1].bar:null;m.forEach(function(x){t+=24+16*x.b;});t+=lb==='rep'?8:(lb?4:0);return t;});
  var sys=[],cur=null,i;
@@ -1475,7 +1476,7 @@ function stfRender(meas,o){
    xm+=wd;var last=(si===sys.length-1&&mj===S.ms.length-1),lbar=m.length?m[m.length-1].bar:null;
    if(last&&o.final&&!lbar)g+=stfBarSvg(xm,'fin',tab,ty);
    else if(lbar)g+=stfBarSvg(xm,lbar,tab,ty);
-   else if(!(last&&M.length===1&&!o.bars))g+=stfBarSvg(xm,'',tab,ty);
+   else if(!(last&&(o.open||(M.length===1&&!o.bars))))g+=stfBarSvg(xm,'',tab,ty);
   });
   BG.forEach(function(gp){if(EVS[gp.ev[0].i]===si)g+=stfBeamSvg(gp,CX);});
   TG.forEach(function(t){if(EVS[t.ev[0].i]!==si)return;var x1=CX[t.ev[0].i]-7,x2=CX[t.ev[2].i]+7,xc=(x1+x2)/2,yy=t.y,dr=t.up?1:-1;
@@ -1492,7 +1493,7 @@ function stfRender(meas,o){
  var sc=o.sc||1.5,vw=Math.round(vbw+10);STF_HIT=null;STF_NM=false;
  return '<svg class="stf" data-sh="'+sh+'" data-t0="'+top0+'" viewBox="0 0 '+vw+' '+y0+'" style="width:'+Math.round(vw*sc)+'px;max-width:100%;height:auto" role="img" aria-label="'+(o.label||'Pentagrama')+'">'+out+'</svg>';
 }
-function hi(o,i){return o.hi===i?(o.hcls||'on'):'';}
+function hi(o,i){if(o.cls&&o.cls[i])return o.cls[i];return o.hi===i?(o.hcls||'on'):'';}
 // ==ENDSTAFF==
 
 // ---------- leer partitura ----------
@@ -1689,6 +1690,7 @@ var EX_HELP={
  read:'Se muestra una nota o frase en el pentagrama y la tocas. Tienes varios niveles y modos.',
  fret:'Encuentra o nombra notas en el mástil. Los fallos se repiten más a menudo para que los domines.',
  melody:'Escucha una melodía corta y repítela en el mástil.',
+ dict:'Pulsa «Escuchar el dictado»: suena una cuenta de un compás y después la melodía. Repítela las veces que quieras. Elige la figura abajo y toca el pentagrama a la altura de la nota: mientras mantienes el dedo la ves en gris con su nombre y suena; suelta para ponerla. Cierra cada compás con «| Barra». Al terminar pulsa «Comprobar»: las notas bien salen en verde y las mal en rojo, y te dice qué compases tienen tiempos de más o de menos. Tres dictados seguidos sin fallo superan el nivel.',
  backing:'Elige una progresión y un estilo. Suena la base y tú tocas encima.',
  solf:'Elige el origen (ejercicio generado, tu Pentagrama libre o un archivo MusicXML/MIDI), el compás, la clave y cómo lo cantas. «Escuchar» suena con guitarra; «Cantar tú» solo marca el pulso con el cursor. Las palabras se pueden cambiar.',
  strum:'Elige un patrón de rasgueo y practica con el click. «Mi patrón» te deja crear el tuyo.'
@@ -1697,7 +1699,7 @@ function exHelp(){var t=EX_HELP[st.exv];return t?'<details class="card lesson" s
 function backB(){return'<div class="row"><button data-a="exback">← Ejercicios</button></div>'+exHelp();}
 function exStopAll(){cdCancel();micClose();bStop();sStop();sqStop();clearTimeout(exTimer);ccStop();wu.playing=false;im.playing=false;}
 function exOpen(id){st.rec=[id].concat((st.rec||[]).filter(function(x){return x!==id;})).slice(0,6);st.exv=id;if(id==='fret')ftNew();if(id==='read')rdStart();if(id==='songs')st.sgId=null;st.tab='study';st.sub='ex';render();if(id==='melody')mlNew();save();}
-var EXC=[['solf','Solfeo cantado','Canta la música con palabras (pan, que-so…), con el nombre de las notas o entonando, con el pulso marcado. Clave de Sol y de Fa, todos los compases; ejercicios por niveles o tu propia partitura.'],['plan','Plan de 8 semanas','Un camino ordenado de afinar a improvisar, con objetivos semanales y acceso directo a cada ejercicio.'],['ivt','Entrenador de intervalos','Ve, oye y toca cada intervalo en el mástil, de los más fáciles (5ª, octava) a los más difíciles. Cuatro modos y niveles que suben solos.'],['route','Ruta en el mástil','Mástil completo: marca las notas que quieras tocar, en el orden que elijas, o carga un ejercicio para unir patrones (parejas y diagonales). Tócalas con cuenta atrás y metrónomo. Notas, intervalos y dedos.'],['arp','Arpegios','Acorde picado (p-i-m-a, 3/4, bajo-agudo-medio-agudo) y arpegios por el mástil. Pentagrama, tablatura y mástil a la vez, con cuenta atrás, ejercicios guiados y micrófono.'],['cchg','Cambios de acorde','Alterna dos acordes durante 30 a 90 segundos y bate tu récord de cambios limpios.'],['warm','Calentamiento de manos','Arañas y ejercicios de digitación en pentagrama y tablatura, con click y cursor.'],['impro','Improvisación guiada','Una base de acordes y la escala del mástil con las notas objetivo de cada acorde.'],['barre','Acordes con cejilla','Fa, Si menor y otras barras: forma, dibujo, pentagrama y ejercicios de fuerza.'],['diary','Cuaderno de práctica','Apunta lo que tocas, tempo y minutos. Gráfica de cómo subes la velocidad.'],['chrd','Acordes en la partitura','Lee el acorde en el pentagrama y la tablatura, tócalo y compara con su dibujo. También en progresiones de 4 acordes.'],['free','Pentagrama libre','Pentagrama en blanco: escribe tus notas y mira la tablatura y el mástil al instante. Escucha lo escrito y sube partituras (MusicXML, MIDI, imagen o PDF).'],['score','Partituras para tocar','Leer y tocar con pentagrama y tablatura: notas, silencios, acordes y riffs. Y una partitura nueva cada vez para leer a primera vista.'],['atlas','Atlas de escalas','Todas las escalas en cualquier nota: notas, pentagrama con tablatura, mástil por posiciones y sonido subiendo y bajando.'],['songs','Biblioteca de canciones','Canciones sencillas con los acordes sobre la letra, por género. Con cejilla y transposición.'],['read','Leer partitura','Lee la nota en el pentagrama y búscala en la guitarra. De cuerdas al aire hasta melodías.'],['fret','Entrenador de mástil','Te digo una nota y la buscas, o al revés. La mejor forma de aprender el mástil.'],['melody','Oído melódico','Escucha unas notas y repítelas con los botones.'],['backing','Pista de acompañamiento','Elige una progresión y toca encima con tu escala.'],['strum','Rasgueo y ritmo','Patrones listos o crea el tuyo golpe a golpe (abajo, arriba, apagado, acento) y guárdalo. Con acordes, al tempo que quieras.'],['prac','Patrones con guía','Las notas se iluminan en el mástil mientras suenan.'],['ear','Intervalos y acordes','Test para reconocerlos de oído.']];
+var EXC=[['solf','Solfeo cantado','Canta la música con palabras (pan, que-so…), con el nombre de las notas o entonando, con el pulso marcado. Clave de Sol y de Fa, todos los compases; ejercicios por niveles o tu propia partitura.'],['plan','Plan de 8 semanas','Un camino ordenado de afinar a improvisar, con objetivos semanales y acceso directo a cada ejercicio.'],['ivt','Entrenador de intervalos','Ve, oye y toca cada intervalo en el mástil, de los más fáciles (5ª, octava) a los más difíciles. Cuatro modos y niveles que suben solos.'],['route','Ruta en el mástil','Mástil completo: marca las notas que quieras tocar, en el orden que elijas, o carga un ejercicio para unir patrones (parejas y diagonales). Tócalas con cuenta atrás y metrónomo. Notas, intervalos y dedos.'],['arp','Arpegios','Acorde picado (p-i-m-a, 3/4, bajo-agudo-medio-agudo) y arpegios por el mástil. Pentagrama, tablatura y mástil a la vez, con cuenta atrás, ejercicios guiados y micrófono.'],['cchg','Cambios de acorde','Alterna dos acordes durante 30 a 90 segundos y bate tu récord de cambios limpios.'],['warm','Calentamiento de manos','Arañas y ejercicios de digitación en pentagrama y tablatura, con click y cursor.'],['impro','Improvisación guiada','Una base de acordes y la escala del mástil con las notas objetivo de cada acorde.'],['barre','Acordes con cejilla','Fa, Si menor y otras barras: forma, dibujo, pentagrama y ejercicios de fuerza.'],['diary','Cuaderno de práctica','Apunta lo que tocas, tempo y minutos. Gráfica de cómo subes la velocidad.'],['chrd','Acordes en la partitura','Lee el acorde en el pentagrama y la tablatura, tócalo y compara con su dibujo. También en progresiones de 4 acordes.'],['free','Pentagrama libre','Pentagrama en blanco: escribe tus notas y mira la tablatura y el mástil al instante. Escucha lo escrito y sube partituras (MusicXML, MIDI, imagen o PDF).'],['score','Partituras para tocar','Leer y tocar con pentagrama y tablatura: notas, silencios, acordes y riffs. Y una partitura nueva cada vez para leer a primera vista.'],['atlas','Atlas de escalas','Todas las escalas en cualquier nota: notas, pentagrama con tablatura, mástil por posiciones y sonido subiendo y bajando.'],['songs','Biblioteca de canciones','Canciones sencillas con los acordes sobre la letra, por género. Con cejilla y transposición.'],['read','Leer partitura','Lee la nota en el pentagrama y búscala en la guitarra. De cuerdas al aire hasta melodías.'],['dict','Dictado musical','Escucha una melodía corta y escríbela en el pentagrama: eliges cada figura, tocas la altura y pones tú las barras de compás. Seis niveles, del ritmo a otras tonalidades.'],['fret','Entrenador de mástil','Te digo una nota y la buscas, o al revés. La mejor forma de aprender el mástil.'],['melody','Oído melódico','Escucha unas notas y repítelas con los botones.'],['backing','Pista de acompañamiento','Elige una progresión y toca encima con tu escala.'],['strum','Rasgueo y ritmo','Patrones listos o crea el tuyo golpe a golpe (abajo, arriba, apagado, acento) y guárdalo. Con acordes, al tempo que quieras.'],['prac','Patrones con guía','Las notas se iluminan en el mástil mientras suenan.'],['ear','Intervalos y acordes','Test para reconocerlos de oído.']];
 function exSorted(){var fv=st.fav||[];return EXC.filter(function(c){return fv.indexOf(c[0])>=0;}).concat(EXC.filter(function(c){return fv.indexOf(c[0])<0;}));}
 function rExercises(seg){
  var el=$('t-study'),h=seg;
@@ -1723,10 +1725,203 @@ function rExercises(seg){
  else if(st.exv==='barre')h+=baHtml();
  else if(st.exv==='read')h+=rdHtml();
  else if(st.exv==='melody')h+=mlHtml();
+ else if(st.exv==='dict')h+=dcHtml();
  else if(st.exv==='backing')h+=bkHtml();
  else if(st.exv==='strum')h+=sHtml();
  el.innerHTML=h;
 }
+// ---- dictado musical ----
+var DC_LV=[['Solo ritmo','Una sola nota (Sol). Escribe el ritmo: redondas, blancas y negras.'],['De Do a Sol','Melodías por grados conjuntos con negras y blancas.'],['Una octava','De Do a Do, con saltos pequeños (terceras).'],['Corcheas y silencios','Se añaden corcheas y silencios.'],['Puntillo y compases','Blanca y negra con puntillo, en 2/4, 3/4 y 4/4.'],['Otras tonalidades','Sol M, Fa M, Re M, La m y Mi m, con su armadura.']];
+var DC_K6=[[1,32,'Sol mayor'],[7,31,'Fa mayor'],[2,29,'Re mayor'],[0,33,'La menor'],[1,30,'Mi menor']],DC_W=230,DC_FIG=['w','h','q','e'];
+var dx={geo:null,ex:null,ans:[],fig:'q',dot:false,res:null,sol:false,gh:null,press:false,first:false,msg:''};
+function dcS(){var d=st.dc;if(!d||typeof d!=='object')d=st.dc={};if(!d.lv)d.lv=1;if(!d.bpm)d.bpm=70;if(!d.p||typeof d.p!=='object')d.p={};return d;}
+function dcP(lv){var p=dcS().p;if(!p[lv])p[lv]={n:0,ok:0,str:0,done:0};return p[lv];}
+function dcKA(k){var K=FE_KEYS[k||0],A=[0,0,0,0,0,0,0],ord=K[1]==='#'?[3,0,4,1,5,2,6]:[6,2,5,1,4,0,3],i;for(i=0;i<K[2];i++)A[ord[i]]=K[1]==='#'?1:-1;return A;}
+function dcKS(k){var K=FE_KEYS[k||0];return K[2]?{t:K[1],n:K[2]}:null;}
+function dcMidi(n,a){return 12*Math.floor(n/7)+NAT[((n%7)+7)%7]+(a||0);}
+function dcPick(c){var t=0,i;c.forEach(function(x){t+=x.w;});var r=Math.random()*t;for(i=0;i<c.length;i++){r-=c[i].w;if(r<=0)return c[i];}return c[c.length-1];}
+function dcTok(t){var o={d:t.replace('.','')};if(t.indexOf('.')>=0)o.dot=1;return o;}
+function dcFill(lv,ts,len,allowRest){
+ var cap=feCap(ts),out=[],pos=0,g=0,f44=ts==='4/4';
+ while(pos<len&&g++<50){var C=[],rm=len-pos;
+  if(pos===0&&rm>=96&&f44)C.push({t:['w'],l:96,w:lv===1?1.2:0.4});
+  if(rm>=48&&(!f44||pos%48===0))C.push({t:['h'],l:48,w:lv>=4?2:3});
+  if(rm>=24)C.push({t:['q'],l:24,w:5});
+  if(lv>=4&&rm>=24){C.push({t:['e','e'],l:24,w:4});if(allowRest&&(out.length===0||out[out.length-1].slice(-1)!=='r'))C.push({t:['qr'],l:24,w:1.5});}
+  if(lv>=5){if(rm>=72&&(pos===0||(f44&&pos===24)))C.push({t:['h.'],l:72,w:2.5});if(rm>=48&&(!f44||pos%48===0))C.push({t:['q.','e'],l:48,w:3});}
+  if(!C.length)break;var c=dcPick(C);out=out.concat(c.t);pos+=c.l;}
+ return out;
+}
+function dcGen(){
+ var d=dcS(),lv=d.lv,ts='4/4',key=0,kn='',lo=28,hi=35,tries=0,ev,nb;
+ if(lv>=5)ts=dcPick([{t:'2/4',w:1},{t:'3/4',w:2},{t:'4/4',w:2}]).t;
+ if(lv===6){var K=dcPick(DC_K6.map(function(k){return{k:k,w:1};})).k;key=K[0];lo=K[1];hi=lo+7;kn=K[2];}
+ else if(lv===2)hi=32;
+ nb=ts==='2/4'?3:2;var cap=feCap(ts),KA=dcKA(key);
+ do{
+  var toks=[],m;
+  for(m=0;m<nb;m++){
+   if(m<nb-1){toks.push(dcFill(lv,ts,cap,true));continue;}
+   var L=ts==='3/4'?72:48;if(ts==='4/4'&&lv<=3&&Math.random()<0.25)L=96;
+   var last=L===72?['h.']:L===96?['w']:['h'];toks.push(dcFill(lv,ts,cap-L,true).concat(last));}
+  ev=[];var notes=0;
+  toks.forEach(function(ms,mi){ms.forEach(function(t,k){var r=t.slice(-1)==='r';if(r&&mi===0&&k===0)t=t.replace('r','');var e=dcTok(t);if(!/r$/.test(e.d))notes++;e.mi=mi;ev.push(e);});});
+  tries++;
+ }while((notes<3||(lv===1&&notes<4))&&tries<30);
+ var nts=ev.filter(function(e){return!/r$/.test(e.d);}),n,i;
+ if(lv===1)nts.forEach(function(e){e.n=32;});
+ else{
+  var S=lv<=2?[[0,1],[1,4],[-1,4]]:lv===3?[[0,1],[1,4],[-1,4],[2,2],[-2,2]]:[[0,1],[1,4],[-1,4],[2,2.5],[-2,2.5],[3,1],[-3,1],[4,.5],[-4,.5]];
+  n=dcPick([{n:lo,w:3},{n:lo+2,w:2},{n:lo+4,w:2}].filter(function(x){return x.n<=hi;})).n;
+  for(i=0;i<nts.length;i++){nts[i].n=n;var s=dcPick(S.map(function(x){return{s:x[0],w:x[1]};})).s;if(n+s<lo||n+s>hi)s=-s;n+=s;}
+  var L2=nts.length-1,tg=(hi>=lo+7&&Math.abs(nts[L2-1].n-(lo+7))<Math.abs(nts[L2-1].n-lo))?lo+7:lo,mx=lv<=2?1:2;
+  nts[L2].n=tg;if(L2>0&&Math.abs(nts[L2-1].n-tg)>mx){var pv=tg+(nts[L2-1].n>tg?1:-1);if(pv>hi||pv<lo)pv=tg+(pv>tg?-1:1);nts[L2-1].n=pv;}
+ }
+ nts.forEach(function(e){e.a=KA[((e.n%7)+7)%7];e.m=dcMidi(e.n,e.a);});
+ var M=[];ev.forEach(function(e){(M[e.mi]=M[e.mi]||[]).push(e);delete e.mi;});
+ dx.ex={lv:lv,ts:ts,key:key,kn:kn,ev:ev,M:M};
+ dx.ans=[{d:ev[0].d,dot:ev[0].dot,n:ev[0].n,a:ev[0].a,m:ev[0].m,lock:1}];if(!dx.ans[0].dot)delete dx.ans[0].dot;
+ dx.res=null;dx.sol=false;dx.first=false;dx.gh=null;dx.dot=false;dx.msg='';
+}
+function dcCopy(e){var o={},k;for(k in e)if(k!=='lock'&&k!=='accd')o[k]=e[k];return o;}
+function dcAcc(M,key){var KA=dcKA(key);M.forEach(function(m){var mem={};m.forEach(function(e){if(/r$/.test(e.d)||e.n==null)return;var l=((e.n%7)+7)%7,c=mem[e.n]!==undefined?mem[e.n]:KA[l],a=e.a||0;e.accd='';if(a!==c){e.accd=a===0?'♮':accStr(a);mem[e.n]=a;}});});return M;}
+function dcUserMeas(gh){
+ var M=[[]],closed=false,list=dx.ans.slice();if(gh)list.push(gh);
+ list.forEach(function(it){if(it.bar){if(M[M.length-1].length)M.push([]);closed=true;}else{M[M.length-1].push(dcCopy(it));closed=false;}});
+ if(M.length>1&&!M[M.length-1].length){M.pop();closed=true;}
+ return{ms:dcAcc(M,dx.ex.key),closed:closed};
+}
+function dcEvs(){return dx.ans.filter(function(x){return!x.bar;});}
+function dcStaffSvg(){
+ var ex=dx.ex,gh=null,cls={};
+ if(dx.gh!=null){gh={d:dx.fig,n:dx.gh,a:dcKA(ex.key)[((dx.gh%7)+7)%7]};if(dx.dot)gh.dot=1;cls[dcEvs().length]='dim';}
+ if(dx.res)dx.res.st.forEach(function(s,i){cls[i]=s==='ok'?'ok':'no';});
+ var U=dcUserMeas(gh);
+ return stfRender(U.ms,{ts:ex.ts,w:DC_W,sc:1.5,minw:DC_W,top:-36,bot:66,bars:true,ks:dcKS(ex.key),open:!U.closed,cls:cls,names:false,label:'Tu dictado'});
+}
+function dcSolSvg(){var ex=dx.ex,M=dcAcc(ex.M.map(function(m){return m.map(dcCopy);}),ex.key);return stfRender(M,{ts:ex.ts,w:DC_W,sc:1.5,minw:DC_W,bars:true,final:true,ks:dcKS(ex.key),names:false,label:'Solución'});}
+function dcGeo(){var box=$('dcStaff'),svg=box&&box.querySelector('svg');if(!svg)return null;var ctm=svg.getScreenCTM(),sh=+svg.getAttribute('data-sh');if(!ctm||!sh)return null;
+ return{inv:ctm.inverse(),sh:sh,t0:+svg.getAttribute('data-t0'),ns:Math.max(1,Math.round(+svg.getAttribute('viewBox').split(' ')[3]/sh)),svg:svg};}
+function dcPtN(ev){
+ var G=dx.geo||dcGeo();if(!G)return null;
+ var pt=G.svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;var q=pt.matrixTransform(G.inv);
+ var si=G.si!=null?G.si:Math.max(0,Math.min(G.ns-1,Math.floor(q.y/G.sh))),ly=q.y-si*G.sh+G.t0;
+ if(dx.geo&&G.si==null)G.si=si;
+ if(dx.ex.lv===1)return 32;
+ return Math.max(25,Math.min(40,Math.round(30+(40-ly)/5)));
+}
+function dcGhost(n){
+ var ch=dx.gh!==n;dx.gh=n;var b=$('dcStaff');if(b)b.innerHTML=dcStaffSvg();
+ var a=dcKA(dx.ex.key)[((n%7)+7)%7],g=$('dcGh');
+ if(g){g.textContent=nm(((n%7)+7)%7,a)+' · '+FEN[dx.fig].toLowerCase()+(dx.dot?' con puntillo':'')+'. Suelta para ponerla.';g.className='fb';}
+ if(ch)playNote(dcMidi(n,a));
+}
+function dcEdit(){dx.res=null;dx.sol=false;}
+function dcAddNote(n){
+ dcEdit();if(dcEvs().length>=40){dx.msg='Máximo 40 figuras.';dcRefresh();return;}
+ var a=dcKA(dx.ex.key)[((n%7)+7)%7],e={d:dx.fig,n:n,a:a,m:dcMidi(n,a)};if(dx.dot)e.dot=1;
+ dx.ans.push(e);dx.dot=false;dx.msg='';dcRefresh();
+}
+function dcBeatsTxt(u){var t=u/24,w=Math.floor(t),h=Math.abs(t-w-0.5)<0.01,q=Math.abs(t-w-0.25)<0.01||Math.abs(t-w-0.75)<0.01;
+ if(q)return(Math.round(t*4))+' semicorcheas';
+ if(w===0&&h)return'medio tiempo';if(h)return w+' tiempo'+(w>1?'s':'')+' y medio';return w+' tiempo'+(w>1?'s':'');}
+function dcCheck(){
+ var ex=dx.ex,U=dcEvs(),O=ex.ev,nu=U.length,no=O.length,i,j;
+ function same(a,b){var ra=/r$/.test(a.d),rb=/r$/.test(b.d);return{p:ra===rb&&(ra||(a.n===b.n&&(a.a||0)===(b.a||0))),d:feDur(a)===feDur(b)&&a.d.replace('r','')===b.d.replace('r','')};}
+ var D=[],B=[];for(i=0;i<=nu;i++){D.push([]);B.push([]);for(j=0;j<=no;j++){D[i][j]=0;B[i][j]=0;}}
+ for(i=1;i<=nu;i++){D[i][0]=i*1.5;B[i][0]=1;}for(j=1;j<=no;j++){D[0][j]=j*1.5;B[0][j]=2;}
+ for(i=1;i<=nu;i++)for(j=1;j<=no;j++){var s=same(U[i-1],O[j-1]),c=(s.p?0:1)+(s.d?0:1),best=D[i-1][j-1]+c,bb=3;
+  if(D[i-1][j]+1.5<best){best=D[i-1][j]+1.5;bb=1;}if(D[i][j-1]+1.5<best){best=D[i][j-1]+1.5;bb=2;}D[i][j]=best;B[i][j]=bb;}
+ var stt=[],why=[],miss=0;i=nu;j=no;
+ while(i>0||j>0){var b=B[i][j];if(b===3){var s2=same(U[i-1],O[j-1]);stt[i-1]=s2.p&&s2.d?'ok':!s2.p&&!s2.d?'both':!s2.p?'pitch':'dur';i--;j--;}else if(b===1){stt[i-1]='extra';i--;}else{miss++;j--;}}
+ var lines=[],cap=feCap(ex.ts),M=dcUserMeas(null).ms,mi=[],k=0;
+ M.forEach(function(m,x){m.forEach(function(){mi[k++]=x+1;});});
+ stt.forEach(function(s,x){if(s==='ok')return;var w=x===0?'':'Nota '+(x+1)+' (compás '+mi[x]+'): ';
+  lines.push(w+(s==='pitch'?'la altura no es esa.':s==='dur'?'la figura no es esa.':s==='both'?'ni la altura ni la figura son esas.':'sobra esta nota.'));});
+ if(miss)lines.push(miss===1?'Falta 1 nota.':'Faltan '+miss+' notas.');
+ var barOk=true;
+ M.forEach(function(m,x){var t=0;m.forEach(function(e){t+=feDur(e);});if(t!==cap){barOk=false;lines.push('Compás '+(x+1)+': '+(t>cap?'sobra'+(t-cap>24?'n ':' ')+dcBeatsTxt(t-cap):'falta'+(cap-t>24?'n ':' ')+dcBeatsTxt(cap-t))+'.');}});
+ if(M.length!==ex.M.length){barOk=false;if(M.length===1&&ex.M.length>1&&!dx.ans.some(function(x){return x.bar;}))lines.push('No has puesto ninguna barra de compás: usa el botón «| Barra».');else lines.push('Has escrito '+M.length+(M.length===1?' compás':' compases')+' y el dictado tiene '+ex.M.length+'.');}
+ var okN=stt.filter(function(s){return s==='ok';}).length,perfect=okN===nu&&!miss&&barOk&&nu===no;
+ lines=lines.map(function(l){return l.replace(/(sobra|falta)n (medio tiempo|1 tiempo)/,'$1 $2').replace(/sobran? (\d+ tiempos)/,'sobran $1').replace(/faltan? (\d+ tiempos)/,'faltan $1');});
+ dx.res={st:stt,lines:lines,perfect:perfect,okN:okN,no:no};
+ var p=dcP(ex.lv),up='';
+ if(!dx.first){dx.first=true;p.n++;if(perfect){p.ok++;p.str++;if(p.str>=3&&!p.done){p.done=1;up=ex.lv<6?'¡Nivel '+ex.lv+' superado! Ya puedes pasar al nivel '+(ex.lv+1)+'.':'¡Has superado el último nivel!';}}else p.str=0;save();}
+ dx.res.up=up;dcRefresh();
+}
+function dcItems(evs){var L=[],b=0;evs.forEach(function(e,i){var du=feDur(e)/24;if(!/r$/.test(e.d))L.push({b:b,i:i,du:du,m:e.m!=null?e.m:dcMidi(e.n,e.a),v:1});else L.push({b:b,i:i,du:du});b+=du;});return{L:L,total:b};}
+function dcPlay(w){
+ var ex=dx.ex,evs=w==='mine'?dcEvs():ex.ev,box=w==='mine'?'dcStaff':w==='sol'?'dcSol':null,beats=+ex.ts.split('/')[0];
+ if(sq.on){var was=dx.playing;sqStop();dx.playing=null;dcBtns();if(was===w)return;}
+ var it=dcItems(evs);dx.playing=w;dcBtns();
+ sqStart(it.L,it.total,dcS().bpm,{click:false,mute:false,countIn:w==='dict'?beats:0,beats:beats,loop:false,
+  show:function(i){if(!box)return;var r=$(box);if(r)stfHi(r,i,i>=0?'on':'',true);if(i<0&&box==='dcStaff'&&dx.res){var s=r&&r.querySelector('svg');if(s)r.innerHTML=dcStaffSvg();}},
+  end:function(){dx.playing=null;dcBtns();}});
+}
+function dcBtns(){var P=dx.playing;[['dict','dcPd','▶ Escuchar el dictado'],['mine','dcPm','▶ Mi versión'],['sol','dcPs','▶ Escuchar']].forEach(function(b){var e=$(b[1]);if(e)e.textContent=P===b[0]?'■ Parar':b[2];});}
+function dcFigIcon(d,dot){var y=d==='w'?11:16,s='<svg viewBox="0 0 22 24" width="18" height="20" aria-hidden="true">';
+ if(d==='w')s+='<ellipse cx="9" cy="'+y+'" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="2.2"/>';
+ else{s+='<ellipse cx="8" cy="'+y+'" rx="5" ry="3.6" transform="rotate(-22 8 '+y+')" fill="'+(d==='h'?'none':'currentColor')+'" stroke="currentColor" stroke-width="1.8"/><line x1="12.4" y1="'+(y-1)+'" x2="12.4" y2="2" stroke="currentColor" stroke-width="1.8"/>';
+  if(d==='e')s+='<path d="M12.4 2 C13 6 18 7 17 12" fill="none" stroke="currentColor" stroke-width="1.8"/>';}
+ if(dot)s+='<circle cx="19" cy="'+y+'" r="1.8" fill="currentColor"/>';return s+'</svg>';}
+function dcRestTxt(){return'Silencio de '+FEN[dx.fig].toLowerCase();}
+function dcCtl(){
+ var lv=dx.ex.lv,F=lv>=4?DC_FIG:['w','h','q'],h='';
+ h+='<div style="display:grid;grid-template-columns:repeat('+F.length+',minmax(0,1fr));gap:6px">'+F.map(function(d){return'<button class="seg" data-a="dcfig" data-v="'+d+'" aria-pressed="'+(dx.fig===d)+'" style="flex-direction:column;gap:2px;min-height:52px;padding:4px 2px">'+dcFigIcon(d)+'<span style="font-size:12px">'+FEN[d]+'</span></button>';}).join('')+'</div>';
+ h+='<div style="display:grid;grid-template-columns:repeat('+(lv>=4?(lv>=5?3:2):1)+',minmax(0,1fr));gap:6px;margin-top:6px">'+(lv>=5?'<button class="seg" data-a="dcdot" aria-pressed="'+dx.dot+'">Puntillo ·</button>':'')+(lv>=4?'<button data-a="dcrest" style="padding:0 6px">Silencio</button>':'')+'<button data-a="dcbar" style="font-weight:700">| Barra</button></div>';
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"><button data-a="dcundo">↶ Deshacer</button><button data-a="dcclr">Borrar todo</button></div>';
+ return h;
+}
+function dcResHtml(){
+ var r=dx.res;if(!r)return dx.msg?'<p class="fb no" style="margin:8px 0 0">'+dx.msg+'</p>':'';
+ var h='<div style="margin-top:10px">';
+ if(r.perfect)h+='<p class="fb ok" style="margin:0"><b>¡Perfecto! Todo bien escrito.</b></p>';
+ else h+='<p class="fb no" style="margin:0 0 4px"><b>'+r.okN+' de '+r.no+' notas bien.</b></p><ul style="margin:0;padding-left:20px">'+r.lines.map(function(l){return'<li>'+l+'</li>';}).join('')+'</ul>';
+ if(r.up)h+='<p class="fb ok" style="margin:8px 0 0"><b>'+r.up+'</b></p>';
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button id="dcPm" data-a="dcmine">▶ Mi versión</button><button data-a="dcsol" aria-pressed="'+dx.sol+'" class="seg">'+(dx.sol?'Ocultar solución':'Ver solución')+'</button></div>';
+ if(dx.sol)h+='<p class="muted" style="margin:12px 0 4px">Solución</p><div id="dcSol">'+dcSolSvg()+'</div><div class="row" style="margin-top:6px"><button id="dcPs" data-a="dcsolplay" class="opt">▶ Escuchar</button></div>';
+ return h+'</div>';
+}
+function dcRefresh(){var a=$('dcStaff'),b=$('dcCtl'),c=$('dcRes'),g=$('dcGh');if(a)a.innerHTML=dcStaffSvg();if(b)b.innerHTML=dcCtl();if(c)c.innerHTML=dcResHtml();if(g){g.textContent=dcHint();g.className='muted';}dcBtns();}
+function dcHint(){return dx.ex.lv===1?'Toca el pentagrama en cualquier sitio: en este nivel todas las notas son Sol.':'Toca el pentagrama y mantén el dedo: verás la nota en gris con su nombre. Desliza para corregir y suelta para ponerla.';}
+function dcHtml(){
+ var d=dcS(),h=backB(),i;if(!dx.ex||dx.ex.lv!==d.lv)dcGen();var ex=dx.ex,p=dcP(d.lv);
+ h+='<div class="card"><p class="muted" style="margin:0 0 6px">Nivel</p><div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">';
+ for(i=1;i<=6;i++)h+='<button class="seg" data-a="dclv" data-v="'+i+'" aria-pressed="'+(d.lv===i)+'" style="padding:0">'+i+(dcP(i).done?' ✓':'')+'</button>';
+ h+='</div><p style="margin:8px 0 0"><b>'+DC_LV[d.lv-1][0]+'.</b> <span class="muted">'+DC_LV[d.lv-1][1]+'</span></p><p class="muted" style="margin:4px 0 0">Seguidos sin fallo: '+Math.min(p.str,3)+' de 3'+(p.n?' · Aciertos: '+p.ok+' de '+p.n:'')+'</p></div>';
+ h+='<div class="card"><p class="big" style="margin:0 0 4px">Escucha y escríbelo</p><p class="muted" style="margin:0 0 8px">Compás '+ex.ts+' · '+ex.M.length+' compases'+(ex.kn?' · '+ex.kn:'')+'. La primera nota ya está escrita.</p>';
+ h+='<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px"><button id="dcPd" class="main" data-a="dcplay">▶ Escuchar el dictado</button>'+[[60,'Lento'],[80,'Normal']].map(function(b){return'<button class="seg" data-a="dcbpm" data-v="'+b[0]+'" aria-pressed="'+(d.bpm===b[0]||(b[0]===60&&d.bpm<70)||(b[0]===80&&d.bpm>=70))+'" style="padding:0 4px">'+b[1]+'</button>';}).join('')+'</div>';
+ h+='<div id="dcStaff" style="touch-action:none;user-select:none;-webkit-user-select:none;margin-top:10px;cursor:crosshair">'+dcStaffSvg()+'</div>';
+ h+='<p id="dcGh" class="muted" style="margin:4px 0 8px;min-height:40px">'+dcHint()+'</p>';
+ h+='<div id="dcCtl">'+dcCtl()+'</div>';
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="main" data-a="dcchk">✓ Comprobar</button><button data-a="dcnew">Nuevo dictado</button></div>';
+ h+='<div id="dcRes">'+dcResHtml()+'</div></div>';
+ return h;
+}
+function dcAct(a,v){
+ var d=dcS();
+ switch(a){
+  case'dclv':sqStop();dx.playing=null;d.lv=+v;save();dcGen();rStudy();return;
+  case'dcnew':sqStop();dx.playing=null;dcGen();rStudy();return;
+  case'dcbpm':d.bpm=+v;save();document.querySelectorAll('[data-a=dcbpm]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===v);});return;
+  case'dcfig':dx.fig=v;break;
+  case'dcdot':dx.dot=!dx.dot;break;
+  case'dcrest':{dcEdit();var e={d:dx.fig+'r'};if(dx.dot)e.dot=1;dx.ans.push(e);dx.dot=false;break;}
+  case'dcbar':dcEdit();if(dx.ans.length&&dx.ans[dx.ans.length-1].bar){dx.msg='Ya hay una barra aquí.';break;}dx.ans.push({bar:1});dx.msg='';break;
+  case'dcundo':dcEdit();if(dx.ans.length>1)dx.ans.pop();else dx.msg='La primera nota viene dada y no se borra.';break;
+  case'dcclr':dcEdit();dx.ans=dx.ans.slice(0,1);dx.msg='';break;
+  case'dcchk':if(sq.on){sqStop();dx.playing=null;}dcCheck();return;
+  case'dcplay':dcPlay('dict');return;
+  case'dcmine':dcPlay('mine');return;
+  case'dcsolplay':dcPlay('sol');return;
+  case'dcsol':dx.sol=!dx.sol;break;
+ }
+ dcRefresh();
+}
+document.addEventListener('pointerdown',function(e){if(st.exv!=='dict'||st.tab!=='study'||st.sub!=='ex')return;var b=e.target.closest&&e.target.closest('#dcStaff');if(!b||!dx.ex)return;dx.geo=dcGeo();var n=dcPtN(e);if(n==null){dx.geo=null;return;}e.preventDefault();dx.press=true;try{b.setPointerCapture(e.pointerId);}catch(er){}dcGhost(n);});
+document.addEventListener('pointermove',function(e){if(!dx.press)return;var n=dcPtN(e);if(n!=null&&n!==dx.gh)dcGhost(n);});
+document.addEventListener('pointerup',function(){if(!dx.press)return;dx.press=false;dx.geo=null;var n=dx.gh;dx.gh=null;if(n!=null)dcAddNote(n);else dcRefresh();});
+document.addEventListener('pointercancel',function(){if(!dx.press)return;dx.press=false;dx.geo=null;dx.gh=null;dcRefresh();});
 // ---- fretboard trainer ----
 var ft={mode:'find',nat:true,str:-1,score:0,total:0,streak:0,q:null,locked:false,res:null};
 function ftNew(){
@@ -3308,7 +3503,7 @@ var LES_G=[['Fundamentos de teoría',['notas','tonos','mayor','menor','intervalo
 ['Estudio y música en grupo',['practica','estudiar','oido','grupo','repertorio']],
 ['Equipo y montaje',['casa','cables','pedales','escenario','directo']]];
 (function(){var o={},k=0;LES_G.forEach(function(g,gi){g[1].forEach(function(id){o[id]=[gi,k++];});});LES.forEach(function(l){var x=o[l.id];l.g=x?x[0]:0;l.o=x?x[1]:999;});LES.sort(function(a,b){return a.o-b.o;});})();
-var GLO=[["Acorde", "Tres o más notas que suenan a la vez. El más básico es la tríada."], ["Alteración", "Signo que sube o baja una nota: ♯ sostenido, ♭ bemol, ♮ becuadro."], ["Arpegio", "Las notas de un acorde tocadas una a una en vez de a la vez."], ["Armadura", "Los ♯ o ♭ que se escriben junto a la clave y afectan a toda la pieza."], ["Auténtica (cadencia)", "Final V → I. Es la más conclusiva: suena a \"punto final\"."], ["Bajo", "La nota más grave de un acorde. En G/B el bajo es Si."], ["Barra de compás", "Raya vertical del pentagrama que separa un compás de otro."], ["Becuadro (♮)", "Anula un sostenido o un bemol anteriores."], ["Bemol (♭)", "Baja una nota un semitono (un traste)."], ["Bending", "Estirar la cuerda hacia arriba para subir el tono de la nota."], ["BPM", "Pulsos por minuto: la velocidad de la música."], ["Cadencia", "Final de frase musical hecho con dos acordes. Puede sonar a final, a pregunta o a sorpresa."], ["Capo / cejilla móvil", "Aparato que se pone en un traste y sube todas las cuerdas a la vez."], ["Cejilla", "Apoyar un dedo sobre todas las cuerdas de un traste para hacer un acorde móvil."], ["Cifrado americano", "Nombres de nota con letras: C D E F G A B = Do Re Mi Fa Sol La Si."], ["Círculo de quintas", "Esquema de las 12 tonalidades ordenadas de quinta en quinta. Muestra qué tonos son vecinos."], ["Clave de sol", "Símbolo al inicio del pentagrama. Marca que la 2ª línea es Sol. Es la clave de la guitarra."], ["Compás", "Grupo de pulsos con un acento al principio. En 4/4 hay 4 pulsos por compás."], ["Compás compuesto", "Compás donde el pulso se divide en tres, como el 6/8."], ["Compás simple", "Compás donde el pulso se divide en dos, como 2/4, 3/4 y 4/4."], ["Consonancia", "Intervalo o acorde que suena estable y agradable, como la 5ª justa."], ["Corchea", "Figura que dura medio pulso en 4/4. Se escriben de dos en dos por pulso."], ["Cromática (escala)", "Escala de 12 notas, todas separadas por un semitono (un traste)."], ["Cuerda al aire", "Cuerda que suena sin pisar ningún traste."], ["Diatónico", "Que pertenece a una escala. Un acorde diatónico usa solo notas de la tonalidad."], ["Digitación", "Qué dedo pisa cada nota. En guitarra: 1 índice, 2 corazón, 3 anular, 4 meñique."], ["Disminuido", "Intervalo o acorde más pequeño de lo normal. Suena tenso."], ["Disonancia", "Intervalo o acorde que suena tenso y pide resolver en algo estable."], ["Dominante", "Grado V de la tonalidad. Crea tensión y pide volver a la tónica (I). En Do mayor es Sol."], ["Dominante 7", "Acorde mayor con séptima menor (como G7). Se construye sobre el grado V y empuja con fuerza hacia el I."], ["Enarmónicas", "Notas con distinto nombre y mismo sonido, como Do♯ y Re♭."], ["Escala", "Conjunto de notas ordenadas que forman una receta de tonos y semitonos."], ["Escala mayor", "Escala alegre. Receta: T T s T T T s. En Do: Do Re Mi Fa Sol La Si."], ["Escala menor natural", "Escala triste. Receta: T s T T s T T. Es la mayor empezando en su 6º grado."], ["Figuras", "Símbolos que indican la duración de una nota: redonda, blanca, negra, corchea…"], ["Grado", "El número de una nota dentro de la escala (1 a 7), normalmente en romanos: I, II, III…"], ["Inversión", "Acorde con otra nota en el bajo que no es la fundamental, como C/E."], ["Intervalo", "Distancia entre dos notas. Se mide en grados y semitonos."], ["Justo (intervalo)", "Nombre de los intervalos 4ª, 5ª y 8ª cuando son los \"normales\"."], ["Ligado", "Tocar varias notas con una sola pulsación de púa usando los dedos de la mano izquierda."], ["Línea adicional", "Rayita corta fuera del pentagrama para escribir notas más agudas o graves."], ["Mediante", "Grado III. Es la nota que decide si el acorde es mayor o menor."], ["Modo", "Escala que se obtiene tocando las notas de una mayor empezando desde otro grado."], ["Modulación", "Cambiar de tonalidad dentro de una canción."], ["Negra", "Figura que dura un pulso en 4/4."], ["Octava (8ª)", "Distancia entre una nota y la siguiente con el mismo nombre, más aguda o más grave. Son 12 semitonos."], ["Palm mute", "Apagar las cuerdas con el canto de la mano derecha cerca del puente."], ["Patrón (caja)", "Forma de tocar una escala en una zona del mástil. La pentatónica tiene 5. Cada patrón se repite 12 trastes más arriba (una octava), por eso puede aparecer en dos sitios del mástil."], ["Cejuela", "Pieza en el extremo del mástil, junto al clavijero, donde se apoyan las cuerdas. Marca el traste 0 (cuerdas al aire)."], ["Posición (en el mástil)", "Zona del mástil donde colocas la mano, nombrada por el traste del dedo índice. «Quinta posición»: índice en el traste 5."], ["Zona baja", "Opción de la app que coloca cada patrón lo más cerca de la cejuela, sin cuerdas al aire. Útil en guitarra española, donde cuesta tocar por encima del traste 12."], ["Unir patrones", "Pasar de un patrón de la escala al siguiente por las notas que comparten, para tocar por todo el mástil y no quedarte en una caja."], ["Escala en diagonal", "Forma de tocar una escala cruzando el mástil: cambias de patrón cada pocas cuerdas mientras subes o bajas."], ["Pentagrama", "Las 5 líneas donde se escribe la música."], ["Pentatónica", "Escala de 5 notas. La menor es 1 b3 4 5 b7."], ["Plagal (cadencia)", "Final IV → I. Suave, conocida como el \"amén\"."], ["Progresión", "Secuencia de acordes de una canción, como I – V – vi – IV."], ["Pulso", "El \"tic tic\" constante de la música, el que sigues con el pie."], ["Quinta justa (5ª)", "Intervalo de 7 semitonos. Es la base del círculo de quintas y del acorde de potencia."], ["Rasgueo", "Tocar varias cuerdas a la vez con la mano derecha, hacia abajo ↓ y hacia arriba ↑."], ["Relativa", "Tonalidad mayor y menor que comparten las mismas notas: Do mayor y La menor."], ["Resolver", "Pasar de un acorde o nota tensos a otro estable."], ["Semicadencia", "Final en el V (I → V). Suena inconcluso, como una pregunta."], ["Semitono / tono", "Distancia de 1 traste / de 2 trastes."], ["Sensible", "Grado VII de la mayor, a un semitono de la tónica. Tiene mucha tensión y quiere subir al I."], ["Séptima", "Nota que se añade a una tríada, 7 o maj7, para dar color al acorde."], ["Silencio", "Figura que indica que no suena nada durante su duración."], ["Slide", "Deslizar el dedo por la cuerda de un traste a otro sin soltarla."], ["Sostenido (♯)", "Sube una nota un semitono (un traste)."], ["Subdominante", "Grado IV de la tonalidad. Suena a \"alejarse de casa\" con suavidad. En Do mayor es Fa."], ["Subdivisión", "Dividir el pulso en partes iguales: corcheas, tresillos, semicorcheas."], ["Superdominante", "Grado VI. En la mayor da el acorde menor relativo (vi)."], ["Supertónica", "Grado II. Da el acorde menor que prepara al V (ii – V – I)."], ["Tablatura", "Notación de 6 líneas, una por cuerda. Los números son los trastes que pisar."], ["Tempo", "La velocidad de la música, medida en BPM."], ["Tercera (3ª)", "Intervalo que decide si un acorde es mayor (3ª mayor) o menor (3ª menor)."], ["Tonalidad", "La escala y los acordes que usa una canción."], ["Tónica", "La nota de casa, el grado I. Donde la música se siente en reposo."], ["Tresillo", "Tres notas en el tiempo de dos. Se cuentan \"tri-pe-le\"."], ["Tritono", "Intervalo de 6 semitonos (4ª aumentada o 5ª disminuida). Muy tenso: la sensación del blues."], ["Tríada", "Acorde de tres notas: fundamental, tercera y quinta."], ["Unísono", "Dos notas iguales sonando a la vez."], ["Vibrato", "Mover la cuerda de forma rápida y pequeña para dar vida a una nota larga."], ["Acorde prestado", "Acorde tomado del modo contrario (mayor ↔ menor) para cambiar el color. Ej.: Fm en Do mayor."], ["Disminuido de paso", "Acorde disminuido a un semitono bajo el siguiente acorde. Funciona como puente."], ["Dominante secundario", "El acorde V7 de otro acorde de la tonalidad que no es el I. Ej.: A7 antes de Dm."], ["Estribillo", "La parte de la canción que se repite y es la más memorable."], ["Función tonal", "El papel de un acorde en la tonalidad: reposo (tónica), alejarse (subdominante) o tensión (dominante)."], ["Mezcla modal", "Usar acordes prestados del modo paralelo, como el iv en una tonalidad mayor."], ["Motivo", "Idea musical corta, de 3 o 4 notas, que se repite y se desarrolla."], ["Notas de llegada", "Notas del acorde (fundamental, tercera, quinta) en las que aterrizas al cambiar de acorde al puntear."], ["Puente", "Parte de contraste dentro de una canción, antes de volver al estribillo."], ["Rota (cadencia)", "Final V → vi. Esperas el I y llega una sorpresa."], ["Transportar", "Pasar una canción a otra tonalidad manteniendo la relación entre los acordes."], ["Verso (estrofa)", "Parte de la canción donde cuenta la historia. Cambia la letra y repite la música."], ["p-i-m-a", "Letras de los dedos de la mano derecha en la guitarra clásica: pulgar, índice, medio y anular."], ["Dejar sonar (let ring)", "Mantener las notas sonando sin cortarlas, como en un arpegio."],["Tensión (9ª, 11ª, 13ª)", "Nota que se añade a un acorde para dar color: la 9ª es la 2ª una octava arriba, la 11ª la 4ª y la 13ª la 6ª."],["Sus2 / sus4", "Acorde donde la tercera se cambia por la 2ª o la 4ª. Suena abierto y sin definir mayor o menor."],["Hammer-on / pull-off", "Ligados: golpear un traste con un dedo para subir de nota (h) o tirar del dedo para bajar (p)."],["Staccato / legato", "Notas cortas y separadas / notas unidas sin cortes."],["Dinámica", "Cambios de volumen en la música: p (suave), f (fuerte), crescendo, diminuendo."],["Rubato", "Acelerar y frenar el tempo ligeramente con expresión."],["Interfaz de audio", "Aparato que convierte la señal de la guitarra o del micrófono en datos para el ordenador y al revés."],["Hi-Z", "Entrada de alta impedancia pensada para guitarras y bajos."],["Latencia", "Retraso entre tocar una nota y oírla al pasar por el ordenador."],["Buffer", "Bloque de audio que procesa el ordenador. Más pequeño: menos latencia."],["Caja DI", "Aparato que convierte la señal desequilibrada de un instrumento en una equilibrada por XLR."],["XLR", "Conector de tres pines, equilibrado, típico de micrófonos y mesas."],["Jack", "Conector de 6,3 mm de la guitarra, los pedales y los amplificadores."],["Alimentación fantasma", "48 V que la interfaz o la mesa envían por el cable XLR a los micrófonos de condensador."],["Ganancia (gain)", "Nivel de amplificación de la entrada. Muy alta: satura o distorsiona."],["Clipping", "Distorsión digital que ocurre cuando la señal supera el máximo (0 dB)."],["Backline", "Equipo de los músicos en el escenario: amplis, batería, teclados."],["PA", "Sistema de altavoces que oye el público."],["FOH", "Front of House: la mesa de sonido situada en la sala."],["Monitor", "Altavoz dirigido a los músicos para que se oigan en el escenario."],["Feedback", "Pitido que aparece cuando el sonido de un altavoz vuelve a entrar al micrófono."],["Soundcheck", "Prueba de sonido antes del concierto."],["Rider técnico", "Documento con el plano del escenario y el equipo que necesita la banda."],["Overdrive / distorsión", "Pedales que añaden saturación al sonido."],["Delay / reverb", "Efectos de eco y de sala."]];
+var GLO=[["Acorde", "Tres o más notas que suenan a la vez. El más básico es la tríada."], ["Alteración", "Signo que sube o baja una nota: ♯ sostenido, ♭ bemol, ♮ becuadro."], ["Arpegio", "Las notas de un acorde tocadas una a una en vez de a la vez."], ["Armadura", "Los ♯ o ♭ que se escriben junto a la clave y afectan a toda la pieza."], ["Auténtica (cadencia)", "Final V → I. Es la más conclusiva: suena a \"punto final\"."], ["Bajo", "La nota más grave de un acorde. En G/B el bajo es Si."], ["Barra de compás", "Raya vertical del pentagrama que separa un compás de otro."], ["Becuadro (♮)", "Anula un sostenido o un bemol anteriores."], ["Bemol (♭)", "Baja una nota un semitono (un traste)."], ["Bending", "Estirar la cuerda hacia arriba para subir el tono de la nota."], ["BPM", "Pulsos por minuto: la velocidad de la música."], ["Cadencia", "Final de frase musical hecho con dos acordes. Puede sonar a final, a pregunta o a sorpresa."], ["Capo / cejilla móvil", "Aparato que se pone en un traste y sube todas las cuerdas a la vez."], ["Cejilla", "Apoyar un dedo sobre todas las cuerdas de un traste para hacer un acorde móvil."], ["Cifrado americano", "Nombres de nota con letras: C D E F G A B = Do Re Mi Fa Sol La Si."], ["Círculo de quintas", "Esquema de las 12 tonalidades ordenadas de quinta en quinta. Muestra qué tonos son vecinos."], ["Clave de sol", "Símbolo al inicio del pentagrama. Marca que la 2ª línea es Sol. Es la clave de la guitarra."], ["Compás", "Grupo de pulsos con un acento al principio. En 4/4 hay 4 pulsos por compás."], ["Compás compuesto", "Compás donde el pulso se divide en tres, como el 6/8."], ["Compás simple", "Compás donde el pulso se divide en dos, como 2/4, 3/4 y 4/4."], ["Consonancia", "Intervalo o acorde que suena estable y agradable, como la 5ª justa."], ["Corchea", "Figura que dura medio pulso en 4/4. Se escriben de dos en dos por pulso."], ["Cromática (escala)", "Escala de 12 notas, todas separadas por un semitono (un traste)."], ["Cuerda al aire", "Cuerda que suena sin pisar ningún traste."], ["Diatónico", "Que pertenece a una escala. Un acorde diatónico usa solo notas de la tonalidad."], ["Digitación", "Qué dedo pisa cada nota. En guitarra: 1 índice, 2 corazón, 3 anular, 4 meñique."], ["Disminuido", "Intervalo o acorde más pequeño de lo normal. Suena tenso."], ["Dictado musical", "Ejercicio de oído: escuchas una melodía o un ritmo y lo escribes en el pentagrama."], ["Disonancia", "Intervalo o acorde que suena tenso y pide resolver en algo estable."], ["Dominante", "Grado V de la tonalidad. Crea tensión y pide volver a la tónica (I). En Do mayor es Sol."], ["Dominante 7", "Acorde mayor con séptima menor (como G7). Se construye sobre el grado V y empuja con fuerza hacia el I."], ["Enarmónicas", "Notas con distinto nombre y mismo sonido, como Do♯ y Re♭."], ["Escala", "Conjunto de notas ordenadas que forman una receta de tonos y semitonos."], ["Escala mayor", "Escala alegre. Receta: T T s T T T s. En Do: Do Re Mi Fa Sol La Si."], ["Escala menor natural", "Escala triste. Receta: T s T T s T T. Es la mayor empezando en su 6º grado."], ["Figuras", "Símbolos que indican la duración de una nota: redonda, blanca, negra, corchea…"], ["Grado", "El número de una nota dentro de la escala (1 a 7), normalmente en romanos: I, II, III…"], ["Inversión", "Acorde con otra nota en el bajo que no es la fundamental, como C/E."], ["Intervalo", "Distancia entre dos notas. Se mide en grados y semitonos."], ["Justo (intervalo)", "Nombre de los intervalos 4ª, 5ª y 8ª cuando son los \"normales\"."], ["Ligado", "Tocar varias notas con una sola pulsación de púa usando los dedos de la mano izquierda."], ["Línea adicional", "Rayita corta fuera del pentagrama para escribir notas más agudas o graves."], ["Mediante", "Grado III. Es la nota que decide si el acorde es mayor o menor."], ["Modo", "Escala que se obtiene tocando las notas de una mayor empezando desde otro grado."], ["Modulación", "Cambiar de tonalidad dentro de una canción."], ["Negra", "Figura que dura un pulso en 4/4."], ["Octava (8ª)", "Distancia entre una nota y la siguiente con el mismo nombre, más aguda o más grave. Son 12 semitonos."], ["Palm mute", "Apagar las cuerdas con el canto de la mano derecha cerca del puente."], ["Patrón (caja)", "Forma de tocar una escala en una zona del mástil. La pentatónica tiene 5. Cada patrón se repite 12 trastes más arriba (una octava), por eso puede aparecer en dos sitios del mástil."], ["Cejuela", "Pieza en el extremo del mástil, junto al clavijero, donde se apoyan las cuerdas. Marca el traste 0 (cuerdas al aire)."], ["Posición (en el mástil)", "Zona del mástil donde colocas la mano, nombrada por el traste del dedo índice. «Quinta posición»: índice en el traste 5."], ["Zona baja", "Opción de la app que coloca cada patrón lo más cerca de la cejuela, sin cuerdas al aire. Útil en guitarra española, donde cuesta tocar por encima del traste 12."], ["Unir patrones", "Pasar de un patrón de la escala al siguiente por las notas que comparten, para tocar por todo el mástil y no quedarte en una caja."], ["Escala en diagonal", "Forma de tocar una escala cruzando el mástil: cambias de patrón cada pocas cuerdas mientras subes o bajas."], ["Pentagrama", "Las 5 líneas donde se escribe la música."], ["Pentatónica", "Escala de 5 notas. La menor es 1 b3 4 5 b7."], ["Plagal (cadencia)", "Final IV → I. Suave, conocida como el \"amén\"."], ["Progresión", "Secuencia de acordes de una canción, como I – V – vi – IV."], ["Puntillo", "Punto a la derecha de una figura que le suma la mitad de su duración. Una blanca con puntillo dura 3 tiempos y una negra con puntillo, 1 y medio."], ["Pulso", "El \"tic tic\" constante de la música, el que sigues con el pie."], ["Quinta justa (5ª)", "Intervalo de 7 semitonos. Es la base del círculo de quintas y del acorde de potencia."], ["Rasgueo", "Tocar varias cuerdas a la vez con la mano derecha, hacia abajo ↓ y hacia arriba ↑."], ["Relativa", "Tonalidad mayor y menor que comparten las mismas notas: Do mayor y La menor."], ["Resolver", "Pasar de un acorde o nota tensos a otro estable."], ["Semicadencia", "Final en el V (I → V). Suena inconcluso, como una pregunta."], ["Semitono / tono", "Distancia de 1 traste / de 2 trastes."], ["Sensible", "Grado VII de la mayor, a un semitono de la tónica. Tiene mucha tensión y quiere subir al I."], ["Séptima", "Nota que se añade a una tríada, 7 o maj7, para dar color al acorde."], ["Silencio", "Figura que indica que no suena nada durante su duración."], ["Slide", "Deslizar el dedo por la cuerda de un traste a otro sin soltarla."], ["Sostenido (♯)", "Sube una nota un semitono (un traste)."], ["Subdominante", "Grado IV de la tonalidad. Suena a \"alejarse de casa\" con suavidad. En Do mayor es Fa."], ["Subdivisión", "Dividir el pulso en partes iguales: corcheas, tresillos, semicorcheas."], ["Superdominante", "Grado VI. En la mayor da el acorde menor relativo (vi)."], ["Supertónica", "Grado II. Da el acorde menor que prepara al V (ii – V – I)."], ["Tablatura", "Notación de 6 líneas, una por cuerda. Los números son los trastes que pisar."], ["Tempo", "La velocidad de la música, medida en BPM."], ["Tercera (3ª)", "Intervalo que decide si un acorde es mayor (3ª mayor) o menor (3ª menor)."], ["Tonalidad", "La escala y los acordes que usa una canción."], ["Tónica", "La nota de casa, el grado I. Donde la música se siente en reposo."], ["Tresillo", "Tres notas en el tiempo de dos. Se cuentan \"tri-pe-le\"."], ["Tritono", "Intervalo de 6 semitonos (4ª aumentada o 5ª disminuida). Muy tenso: la sensación del blues."], ["Tríada", "Acorde de tres notas: fundamental, tercera y quinta."], ["Unísono", "Dos notas iguales sonando a la vez."], ["Vibrato", "Mover la cuerda de forma rápida y pequeña para dar vida a una nota larga."], ["Acorde prestado", "Acorde tomado del modo contrario (mayor ↔ menor) para cambiar el color. Ej.: Fm en Do mayor."], ["Disminuido de paso", "Acorde disminuido a un semitono bajo el siguiente acorde. Funciona como puente."], ["Dominante secundario", "El acorde V7 de otro acorde de la tonalidad que no es el I. Ej.: A7 antes de Dm."], ["Estribillo", "La parte de la canción que se repite y es la más memorable."], ["Función tonal", "El papel de un acorde en la tonalidad: reposo (tónica), alejarse (subdominante) o tensión (dominante)."], ["Mezcla modal", "Usar acordes prestados del modo paralelo, como el iv en una tonalidad mayor."], ["Motivo", "Idea musical corta, de 3 o 4 notas, que se repite y se desarrolla."], ["Notas de llegada", "Notas del acorde (fundamental, tercera, quinta) en las que aterrizas al cambiar de acorde al puntear."], ["Puente", "Parte de contraste dentro de una canción, antes de volver al estribillo."], ["Rota (cadencia)", "Final V → vi. Esperas el I y llega una sorpresa."], ["Transportar", "Pasar una canción a otra tonalidad manteniendo la relación entre los acordes."], ["Verso (estrofa)", "Parte de la canción donde cuenta la historia. Cambia la letra y repite la música."], ["p-i-m-a", "Letras de los dedos de la mano derecha en la guitarra clásica: pulgar, índice, medio y anular."], ["Dejar sonar (let ring)", "Mantener las notas sonando sin cortarlas, como en un arpegio."],["Tensión (9ª, 11ª, 13ª)", "Nota que se añade a un acorde para dar color: la 9ª es la 2ª una octava arriba, la 11ª la 4ª y la 13ª la 6ª."],["Sus2 / sus4", "Acorde donde la tercera se cambia por la 2ª o la 4ª. Suena abierto y sin definir mayor o menor."],["Hammer-on / pull-off", "Ligados: golpear un traste con un dedo para subir de nota (h) o tirar del dedo para bajar (p)."],["Staccato / legato", "Notas cortas y separadas / notas unidas sin cortes."],["Dinámica", "Cambios de volumen en la música: p (suave), f (fuerte), crescendo, diminuendo."],["Rubato", "Acelerar y frenar el tempo ligeramente con expresión."],["Interfaz de audio", "Aparato que convierte la señal de la guitarra o del micrófono en datos para el ordenador y al revés."],["Hi-Z", "Entrada de alta impedancia pensada para guitarras y bajos."],["Latencia", "Retraso entre tocar una nota y oírla al pasar por el ordenador."],["Buffer", "Bloque de audio que procesa el ordenador. Más pequeño: menos latencia."],["Caja DI", "Aparato que convierte la señal desequilibrada de un instrumento en una equilibrada por XLR."],["XLR", "Conector de tres pines, equilibrado, típico de micrófonos y mesas."],["Jack", "Conector de 6,3 mm de la guitarra, los pedales y los amplificadores."],["Alimentación fantasma", "48 V que la interfaz o la mesa envían por el cable XLR a los micrófonos de condensador."],["Ganancia (gain)", "Nivel de amplificación de la entrada. Muy alta: satura o distorsiona."],["Clipping", "Distorsión digital que ocurre cuando la señal supera el máximo (0 dB)."],["Backline", "Equipo de los músicos en el escenario: amplis, batería, teclados."],["PA", "Sistema de altavoces que oye el público."],["FOH", "Front of House: la mesa de sonido situada en la sala."],["Monitor", "Altavoz dirigido a los músicos para que se oigan en el escenario."],["Feedback", "Pitido que aparece cuando el sonido de un altavoz vuelve a entrar al micrófono."],["Soundcheck", "Prueba de sonido antes del concierto."],["Rider técnico", "Documento con el plano del escenario y el equipo que necesita la banda."],["Overdrive / distorsión", "Pedales que añaden saturación al sonido."],["Delay / reverb", "Efectos de eco y de sala."]];
 GLO.sort(function(a,b){return a[0].localeCompare(b[0],'es');});
 var SHN=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'],FLN=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
 function lat2(s){return st.latin?conv(s):s;}
@@ -5322,6 +5517,7 @@ function render(){applyPrefs();
 function act(a,v,el){
  var c;
  switch(a){
+  case'dclv':case'dcnew':case'dcbpm':case'dcfig':case'dcdot':case'dcrest':case'dcbar':case'dcundo':case'dcclr':case'dcchk':case'dcplay':case'dcmine':case'dcsolplay':case'dcsol':dcAct(a,v);break;
   case'slsrc':case'sllvl':case'slclef':case'slts':case'slbars':case'slnew':case'slmode':case'slloop':case'slfrom':case'slto':case'slplay':case'slstop':case'slwreset':case'slmic':case'slnm':slAct(a,v);break;
   case'tab':if(v!=='chords')cp.dict=null;if(st.tab==='metro'&&v!=='metro'&&false)mStop();toneStop();progStop();st.tab=v;render();break;
   case'pgo':if(pr.running)pStop();else cdRun(pStart);break;
