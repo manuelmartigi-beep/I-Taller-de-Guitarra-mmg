@@ -1267,18 +1267,23 @@ function stfScroll(box,d){
  })(a.t0);
 }
 // Al pulsar Escuchar / Tocar tú: antes de la cuenta atrás, sube la partitura (la que va después del botón pulsado) arriba de la pantalla.
-var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button');if(b)STF_BTN=b;},true);}catch(e){}
-function stfTop(){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
+var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button');if(!b)return;STF_BTN=b;
+ // Cualquier botón «Escuchar»: tras pulsarlo, sube la partitura (o el mástil, o el principio de la pantalla) arriba.
+ if(/Escuchar/.test(b.textContent||'')&&!/Parar/.test(b.textContent||'')){var t0=performance.now();setTimeout(function(){if(STF_AN&&STF_AN.t0>=t0)return;STF_BTN=b;stfTop(true);},40);}},true);}catch(e){}
+function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
  document.querySelectorAll('svg.stf').forEach(function(x){if(x.getBoundingClientRect().height&&x.querySelector('.ev'))v.push(x);});
  if(b)for(var i=0;i<v.length;i++)if(b.compareDocumentPosition(v[i])&4){s=v[i];break;}
  if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);return;}
  // «Empezar» de Practicar con guía (pestaña Mástil): sube el mástil arriba de la pantalla.
- var nk=b&&b.id==='pgo'&&$('neck'),bd=nk&&nk.closest('.board');if(bd&&bd.getBoundingClientRect().height){STF_UT=0;stfScroll(null,bd.getBoundingClientRect().top-10);}}catch(e){}}
+ var nk=b&&b.id==='pgo'&&$('neck'),bd=nk&&nk.closest('.board');
+ if(!bd&&all){var bs=document.querySelectorAll('.board');for(var j=0;j<bs.length;j++)if(bs[j].getBoundingClientRect().height){bd=bs[j];break;}}
+ if(bd&&bd.getBoundingClientRect().height){STF_UT=0;stfScroll(null,bd.getBoundingClientRect().top-10);}
+ else if(all){STF_UT=0;stfScroll(null,-(window.pageYOffset||document.documentElement.scrollTop));}}catch(e){}}
 // Al arrancar (durante los clics de entrada) coloca a la vista la línea de la primera nota.
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='53'; // súbelo junto con VERSION de sw.js
+var APP_VER='54'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}

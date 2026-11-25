@@ -652,7 +652,7 @@ function updTempo(){$('tempo').value=O.tempo;$('tempoV').textContent=O.tempo+'% 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(b)openPiece(b.dataset.open);});
 $('back').onclick=()=>{history.length>1&&location.hash?history.back():showList();};
 window.addEventListener('popstate',()=>{const id=decodeURIComponent(location.hash.slice(1));if(id)openPiece(id,false);else showList();});
-document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>toggleMode(b.dataset.m));
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{if(b.dataset.m==='play'&&!RUN){FOL_UT=0;const sc=$('score'),bar=$('bar').getBoundingClientRect().height;if(sc)folScroll(Math.max(0,sc.getBoundingClientRect().top+window.scrollY-bar-10));}toggleMode(b.dataset.m);});
 $('tempo').oninput=()=>{O.tempo=+$('tempo').value;updTempo();save();};
 $('tempo').onchange=()=>{if(RUN&&RUN.mode!=='wait'){const m=RUN.mode;stop();toggleMode(m);}};
 ['lpA','lpB'].forEach(id=>$(id).onchange=()=>{markLoop();if(RUN)stop();});
