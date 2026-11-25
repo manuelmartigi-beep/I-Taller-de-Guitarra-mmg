@@ -1241,6 +1241,7 @@ var STF_UT=0;try{['touchmove','wheel'].forEach(function(e){window.addEventListen
 function stfFollow(el,force){
  try{
   if(!force&&(Date.now()-STF_UT<3000||STF_AN))return;
+  if(st.mb&&st.mb.view==='neck'&&el.closest&&el.closest('#mbStaff'))return;
   var svg=el.ownerSVGElement;if(!svg)return;var g=el;while(g.parentNode&&g.parentNode!==svg)g=g.parentNode;if(g.parentNode!==svg)g=svg;
   var r=g.getBoundingClientRect();if(!r.height)return;var nx=g.nextElementSibling;while(nx&&nx.tagName.toLowerCase()!=='g')nx=nx.nextElementSibling;var rb=nx?nx.getBoundingClientRect().bottom:r.bottom;
   var sc=svg.parentNode;while(sc&&sc.nodeType===1&&sc!==document.body&&sc!==document.documentElement){var cs=getComputedStyle(sc);if(/(auto|scroll)/.test(cs.overflowY)&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentNode;}
@@ -1271,6 +1272,7 @@ var STF_BTN=null;try{document.addEventListener('click',function(e){var b=e.targe
  // Cualquier botón «Escuchar»: tras pulsarlo, sube la partitura (o el mástil, o el principio de la pantalla) arriba.
  if(/Escuchar/.test(b.textContent||'')&&!/Parar/.test(b.textContent||'')){var t0=performance.now();setTimeout(function(){if(STF_AN&&STF_AN.t0>=t0)return;STF_BTN=b;stfTop(true);},40);}},true);}catch(e){}
 function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,v=[],s=null;STF_BTN=null;
+ if(b&&/^mb(listen|go)$/.test(b.dataset.a||'')&&st.mb.view==='neck'){var mb=$('mbSc'),mbd=mb&&mb.closest('.board');if(mbd){STF_UT=0;stfScroll(null,mbd.getBoundingClientRect().top-10);}return;}
  document.querySelectorAll('svg.stf').forEach(function(x){if(x.getBoundingClientRect().height&&x.querySelector('.ev'))v.push(x);});
  if(b)for(var i=0;i<v.length;i++)if(b.compareDocumentPosition(v[i])&4){s=v[i];break;}
  if(!s&&v.length===1)s=v[0];if(s){STF_UT=0;stfFollow(s.querySelector('.ev'),true);return;}
@@ -1283,7 +1285,7 @@ function stfTop(all){try{var b=STF_BTN&&document.contains(STF_BTN)?STF_BTN:null,
 function stfPre(i){try{var c=[];document.querySelectorAll('svg.stf').forEach(function(s){if(s.getBoundingClientRect().height&&s.querySelectorAll('.ev')[i])c.push(s);});if(c.length===1)stfFollow(c[0].querySelectorAll('.ev')[i]);}catch(e){}}
 // meas: [[{m|n,a,d:'w|h|q|e'(+'r' silencio),pos:{s,f}}...]...]; o:{w,ts,ks:{t:'#'|'b',n},tab,flat,sc,final,names}
 function stfNB(v){return'<button class="seg opt" data-a="stfnames"'+(v?' data-v="'+v+'"':'')+' aria-pressed="'+!!st.stfNames+'">Nombres de notas '+(st.stfNames?'sí':'no')+'</button>';}
-var APP_VER='54'; // súbelo junto con VERSION de sw.js
+var APP_VER='55'; // súbelo junto con VERSION de sw.js
 var STF_HIT=null,STF_NM=false,STF_DOT=[1,1.5,1.75],STF_NFL={e:1,s:2,t:3};
 function stfG(x,cls,cx){return'<g class="ev'+(cls?' '+cls:'')+'" data-i="'+x.i+'"'+(STF_HIT?' data-a="fesel" data-v="'+x.i+'" style="cursor:pointer"':'')+'>'+(STF_HIT?'<rect x="'+(cx-14)+'" y="'+STF_HIT.y+'" width="28" height="'+STF_HIT.h+'" fill="transparent"/>':'');}
 function stfTopExt(x){if(x.r)return 0;if(x.d==='w')return x.tp-6;if(x.up)return x.bm?x.bm.y:x.tp-32-((STF_NFL[x.d]||1)-1)*7*(STF_NFL[x.d]?1:0);return x.tp-6;}
@@ -1671,7 +1673,7 @@ function segB(a,v,label,on){return'<button class="seg opt" data-a="'+a+'" data-v
 var EX_HELP={
  plan:'Sigue un objetivo tras otro. Marca cada uno con el círculo cuando lo hayas hecho; los botones te llevan directo al ejercicio.',
  ivt:'Elige un modo. En «Aprender» pulsa un intervalo y mira cómo se dibuja. En los otros, responde tocando en el mástil o eligiendo el nombre. R es la nota de partida.',
- route:'Toca en el mástil las notas que quieras tocar, en orden, o carga uno de los «Ejercicios para unir patrones»: parejas (subes por un patrón y bajas por el siguiente) y diagonales (cruzas el mástil cambiando de patrón). Con «Zona baja» los ejercicios quedan cerca de la cejuela y sin cuerdas al aire. Después pulsa «Escuchar» o «Tocar tú». Activa «Evaluar con micrófono» si quieres que la app compruebe tus notas. Mientras suena, la pantalla baja sola para que la partitura se vea siempre.',
+ route:'Toca en el mástil las notas que quieras tocar, en orden, o carga uno de los «Ejercicios para unir patrones»: parejas (subes por un patrón y bajas por el siguiente) y diagonales (cruzas el mástil cambiando de patrón). Con «Zona baja» los ejercicios quedan cerca de la cejuela y sin cuerdas al aire. Después pulsa «Escuchar» o «Tocar tú». Activa «Evaluar con micrófono» si quieres que la app compruebe tus notas. En «Seguir» elige «Solo mástil» (el mástil arriba y la pantalla quieta) o «Mástil y partitura» (la pantalla baja sola para que la partitura se vea siempre).',
  arp:'Elige un ejercicio guiado o configura el tuyo: acorde, patrón, figura y tempo. «Escuchar» lo reproduce; «Tocar tú» solo pone el metrónomo y el cursor te marca la nota. Activa el micrófono si quieres que la app te evalúe. Mientras suena, la pantalla baja sola para que la partitura se vea siempre.',
  cchg:'Toca los acordes que quieras practicar (mínimo 2). Elige cada cuántos segundos cambia, o «Manual» para marcar tú los cambios limpios.',
  warm:'Ejercicios de digitación para calentar las manos. Sigue el patrón con el metrónomo, empezando despacio.',
@@ -3887,7 +3889,7 @@ function ccGo(){
 function ccTap(){if(!cc.run)return;cc.n++;cc.turn++;if($('ccBox'))$('ccBox').innerHTML=ccBox();}
 // ----- ruta en el mástil -----
 if(!st.mb||typeof st.mb!=='object')st.mb={};
-(function(m){if(!Array.isArray(m.seq))m.seq=[];if(['ord','note','int','fing'].indexOf(m.lab)<0)m.lab='ord';if(!(m.root>=0&&m.root<12))m.root=9;if(!(m.bpm>=30&&m.bpm<=500))m.bpm=70;if(['q','e','s'].indexOf(m.du)<0)m.du='q';if(typeof m.name!=='string')m.name='';if(typeof m.loop!=='boolean')m.loop=false;if(!Array.isArray(m.saved))m.saved=[];})(st.mb);
+(function(m){if(!Array.isArray(m.seq))m.seq=[];if(['ord','note','int','fing'].indexOf(m.lab)<0)m.lab='ord';if(!(m.root>=0&&m.root<12))m.root=9;if(!(m.bpm>=30&&m.bpm<=500))m.bpm=70;if(['q','e','s'].indexOf(m.du)<0)m.du='q';if(typeof m.name!=='string')m.name='';if(typeof m.loop!=='boolean')m.loop=false;if(!Array.isArray(m.saved))m.saved=[];if(m.view!=='neck')m.view='both';})(st.mb);
 var mbs={playing:false,sx:0,msg:''};
 var MB_DX=40,MB_BPM=[[40,50,60,70,80,90,100,110,120,140,160,180,200],[220,240,260,280,300],[320,360,400,440,480,500]];
 function mbMidi(p){return TUN[st.tun].midi[p.s]+p.f;}
@@ -4006,7 +4008,8 @@ function mbHtml(){
  h+='<div class="board'+(st.lefty?' l':'')+'"><div class="scroll" id="mbSc"><div id="mbNeck">'+mbBoard()+'</div></div></div>';
  h+='<div class="card"><div class="row" style="justify-content:space-between"><b id="mbCnt">'+m.seq.length+' notas</b><span class="row" style="gap:6px"><button class="opt" data-a="mbundo">↶ Deshacer</button><button class="opt" data-a="mbback">Ida y vuelta</button><button class="opt" data-a="mbclr">Borrar</button></span></div><div class="row" id="mbSeq" style="flex-wrap:wrap;gap:6px;margin-top:8px">'+mbSeqHtml()+'</div></div>';
  h+='<div class="card"><div class="row"><select id="mbBpm" aria-label="Tempo">'+MB_BPM.map(function(g,gi){return'<optgroup label="'+['Normal','Rápido','Muy rápido'][gi]+'">'+g.map(function(b){return'<option value="'+b+'"'+(b===m.bpm?' selected':'')+'>'+b+' ppm</option>';}).join('')+'</optgroup>';}).join('')+'</select><select id="mbDu" aria-label="Duración de cada nota">'+[['q','Negras'],['e','Corcheas'],['s','Semicorcheas']].map(function(o){return'<option value="'+o[0]+'"'+(m.du===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select><button class="seg" data-a="mbloop" aria-pressed="'+m.loop+'">Repetir</button><button class="seg" data-a="mbmic" aria-pressed="'+!!st.mbMic+'">🎤 Evaluar con micrófono</button></div><p class="fb" id="mbRes" style="margin:6px 0 0">'+(mbs.res?esc(micMsg(mbs.res)):'')+'</p>';
- h+='<div class="row" style="margin-top:8px"><button class="opt" data-a="mblisten">▶ Escuchar</button><button class="main opt" data-a="mbgo">Tocar tú</button><button class="opt" data-a="mbstop">Parar</button></div><p class="muted" style="margin:8px 0 0">En ambos casos verás la cuenta atrás 3-2-1 y sonarán cuatro clics de entrada. Con «Tocar tú» solo suena el metrónomo; la nota que toca se marca en el mástil y en la partitura. Para practicar púas o pulsaciones rápidas, sube el tempo y usa semicorcheas.</p></div>';
+ h+='<div class="row" style="margin-top:8px"><span class="muted" style="flex:none">Seguir</span><button class="seg" data-a="mbview" data-v="neck" aria-pressed="'+(m.view==='neck')+'">Solo mástil</button><button class="seg" data-a="mbview" data-v="both" aria-pressed="'+(m.view!=='neck')+'">Mástil y partitura</button></div>';
+ h+='<div class="row" style="margin-top:8px"><button class="opt" data-a="mblisten">▶ Escuchar</button><button class="main opt" data-a="mbgo">Tocar tú</button><button class="opt" data-a="mbstop">Parar</button></div><p class="muted" style="margin:8px 0 0">En ambos casos verás la cuenta atrás 3-2-1 y sonarán cuatro clics de entrada. Con «Solo mástil» el mástil sube arriba y la pantalla no se mueve; con «Mástil y partitura» la pantalla baja sola para que veas siempre la partitura. Con «Tocar tú» solo suena el metrónomo; la nota que toca se marca en el mástil y en la partitura. Para practicar púas o pulsaciones rápidas, sube el tempo y usa semicorcheas.</p></div>';
  h+='<div class="card"><div class="row"><input id="mbName" type="text" placeholder="Nombre de la ruta" maxlength="40" value="'+esc(m.name)+'" style="flex:1;min-width:0"><button class="opt" data-a="mbsave">Guardar</button><button class="opt" data-a="mbprint">🖨 Imprimir</button></div>';
  if(mbs.msg)h+='<p class="fb" style="margin:6px 0 0">'+esc(mbs.msg)+'</p>';
  h+='<div class="row" style="margin:8px 0 6px">'+stfNB()+'</div><div id="mbStaff">'+mbStaffHtml()+'</div></div>';
@@ -5333,6 +5336,7 @@ function act(a,v,el){
   case'mblab':st.mb.lab=v;save();mbFull();break;
   case'mbloop':st.mb.loop=!st.mb.loop;el.setAttribute('aria-pressed',st.mb.loop);save();break;
   case'mblisten':mbGo(false);break;
+  case'mbview':st.mb.view=v==='neck'?'neck':'both';save();document.querySelectorAll('[data-a=mbview]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===st.mb.view);});break;
   case'mbprint':mbPrint();break;
   case'mbgo':if(mbs.playing){mbStop();mbShow(-1);}else mbGo(true);break;
   case'mbstop':mbStop();mbShow(-1);break;
